@@ -15,3 +15,29 @@
 /MhrsWebApi/MhrsWebApi.Host/logs
 /MhrsWebApi/MhrsWebApi.Host/obj
 /MhrsWebApi/MhrsWebApi.HttpClient/obj
+
+
+# Sanal Ortamlar
+venv/
+env/
+.env/
+.venv/
+
+# Önbellek ve Derlenmiş Dosyalar
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Editör Ayarları
+.vscode/
+.idea/
+
+# Veritabanı ve Büyük Dosyalar (Kendi projene göre uyarla)
+*.sqlite3
+*.db
+*.csv
+*.mp4
+*.log
+
+# Çevresel Değişkenler (Şifrelerin sızmaması için çok önemli)
+.env
