@@ -1,0 +1,17 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/MhrsWebApi/.vs
+/MhrsWebApi/MhrsWebApi.Application/obj
+/MhrsWebApi/MhrsWebApi.Application/bin/Debug/net8.0
+/MhrsWebApi/MhrsWebApi.Application.Contract/bin/Debug/net8.0
+/MhrsWebApi/MhrsWebApi.Application.Contract/obj
+/MhrsWebApi/MhrsWebApi.Domain/bin/Debug/net8.0
+/MhrsWebApi/MhrsWebApi.Domain/obj
+/MhrsWebApi/MhrsWebApi.EntityFramework/bin/Debug/net8.0
+/MhrsWebApi/MhrsWebApi.EntityFramework/obj
+/MhrsWebApi/MhrsWebApi.Host/bin/Debug/net8.0
+/MhrsWebApi/MhrsWebApi.Host/logs
+/MhrsWebApi/MhrsWebApi.Host/obj
+/MhrsWebApi/MhrsWebApi.HttpClient/obj
