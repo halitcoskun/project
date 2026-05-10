@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title id="head-title">tez_test_raporu.html</title>
+      <style type="text/css">body {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  /* do not increase min-width as some may use split screens */
+  min-width: 800px;
+  color: #999;
+}
+
+h1 {
+  font-size: 24px;
+  color: black;
+}
+
+h2 {
+  font-size: 16px;
+  color: black;
+}
+
+p {
+  color: black;
+}
+
+a {
+  color: #999;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+/******************************
+ * SUMMARY INFORMATION
+ ******************************/
+#environment td {
+  padding: 5px;
+  border: 1px solid #e6e6e6;
+  vertical-align: top;
+}
+#environment tr:nth-child(odd) {
+  background-color: #f6f6f6;
+}
+#environment ul {
+  margin: 0;
+  padding: 0 20px;
+}
+
+/******************************
+ * TEST RESULT COLORS
+ ******************************/
+span.passed,
+.passed .col-result {
+  color: green;
+}
+
+span.skipped,
+span.xfailed,
+span.rerun,
+.skipped .col-result,
+.xfailed .col-result,
+.rerun .col-result {
+  color: orange;
+}
+
+span.error,
+span.failed,
+span.xpassed,
+.error .col-result,
+.failed .col-result,
+.xpassed .col-result {
+  color: red;
+}
+
+.col-links__extra {
+  margin-right: 3px;
+}
+
+/******************************
+ * RESULTS TABLE
+ *
+ * 1. Table Layout
+ * 2. Extra
+ * 3. Sorting items
+ *
+ ******************************/
+/*------------------
+ * 1. Table Layout
+ *------------------*/
+#results-table {
+  border: 1px solid #e6e6e6;
+  color: #999;
+  font-size: 12px;
+  width: 100%;
+}
+#results-table th,
+#results-table td {
+  padding: 5px;
+  border: 1px solid #e6e6e6;
+  text-align: left;
+}
+#results-table th {
+  font-weight: bold;
+}
+
+/*------------------
+ * 2. Extra
+ *------------------*/
+.logwrapper {
+  max-height: 230px;
+  overflow-y: scroll;
+  background-color: #e6e6e6;
+}
+.logwrapper.expanded {
+  max-height: none;
+}
+.logwrapper.expanded .logexpander:after {
+  content: "collapse [-]";
+}
+.logwrapper .logexpander {
+  z-index: 1;
+  position: sticky;
+  top: 10px;
+  width: max-content;
+  border: 1px solid;
+  border-radius: 3px;
+  padding: 5px 7px;
+  margin: 10px 0 10px calc(100% - 80px);
+  cursor: pointer;
+  background-color: #e6e6e6;
+}
+.logwrapper .logexpander:after {
+  content: "expand [+]";
+}
+.logwrapper .logexpander:hover {
+  color: #000;
+  border-color: #000;
+}
+.logwrapper .log {
+  min-height: 40px;
+  position: relative;
+  top: -50px;
+  height: calc(100% + 50px);
+  border: 1px solid #e6e6e6;
+  color: black;
+  display: block;
+  font-family: "Courier New", Courier, monospace;
+  padding: 5px;
+  padding-right: 80px;
+  white-space: pre-wrap;
+}
+
+div.media {
+  border: 1px solid #e6e6e6;
+  float: right;
+  height: 240px;
+  margin: 0 5px;
+  overflow: hidden;
+  width: 320px;
+}
+
+.media-container {
+  display: grid;
+  grid-template-columns: 25px auto 25px;
+  align-items: center;
+  flex: 1 1;
+  overflow: hidden;
+  height: 200px;
+}
+
+.media-container--fullscreen {
+  grid-template-columns: 0px auto 0px;
+}
+
+.media-container__nav--right,
+.media-container__nav--left {
+  text-align: center;
+  cursor: pointer;
+}
+
+.media-container__viewport {
+  cursor: pointer;
+  text-align: center;
+  height: inherit;
+}
+.media-container__viewport img,
+.media-container__viewport video {
+  object-fit: cover;
+  width: 100%;
+  max-height: 100%;
+}
+
+.media__name,
+.media__counter {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  flex: 0 0 25px;
+  align-items: center;
+}
+
+.collapsible td:not(.col-links) {
+  cursor: pointer;
+}
+.collapsible td:not(.col-links):hover::after {
+  color: #bbb;
+  font-style: italic;
+  cursor: pointer;
+}
+
+.col-result {
+  width: 130px;
+}
+.col-result:hover::after {
+  content: " (hide details)";
+}
+
+.col-result.collapsed:hover::after {
+  content: " (show details)";
+}
+
+#environment-header h2:hover::after {
+  content: " (hide details)";
+  color: #bbb;
+  font-style: italic;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+#environment-header.collapsed h2:hover::after {
+  content: " (show details)";
+  color: #bbb;
+  font-style: italic;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+/*------------------
+ * 3. Sorting items
+ *------------------*/
+.sortable {
+  cursor: pointer;
+}
+.sortable.desc:after {
+  content: " ";
+  position: relative;
+  left: 5px;
+  bottom: -12.5px;
+  border: 10px solid #4caf50;
+  border-bottom: 0;
+  border-left-color: transparent;
+  border-right-color: transparent;
+}
+.sortable.asc:after {
+  content: " ";
+  position: relative;
+  left: 5px;
+  bottom: 12.5px;
+  border: 10px solid #4caf50;
+  border-top: 0;
+  border-left-color: transparent;
+  border-right-color: transparent;
+}
+
+.hidden, .summary__reload__button.hidden {
+  display: none;
+}
+
+.summary__data {
+  flex: 0 0 550px;
+}
+.summary__reload {
+  flex: 1 1;
+  display: flex;
+  justify-content: center;
+}
+.summary__reload__button {
+  flex: 0 0 300px;
+  display: flex;
+  color: white;
+  font-weight: bold;
+  background-color: #4caf50;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.summary__reload__button:hover {
+  background-color: #46a049;
+}
+.summary__spacer {
+  flex: 0 0 550px;
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
+}
+
+.filters,
+.collapse {
+  display: flex;
+  align-items: center;
+}
+.filters button,
+.collapse button {
+  color: #999;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.filters button:hover,
+.collapse button:hover {
+  color: #ccc;
+}
+
+.filter__label {
+  margin-right: 10px;
+}
+
+      </style>
+    
+  </head>
+  <body>
+    <h1 id="title">tez_test_raporu.html</h1>
+    <p>Report generated on 10-May-2026 at 03:00:27 by <a href="https://pypi.python.org/pypi/pytest-html">pytest-html</a>
+        v4.2.0</p>
+    <div id="environment-header">
+      <h2>Environment</h2>
+    </div>
+    <table id="environment"></table>
+    <!-- TEMPLATES -->
+      <template id="template_environment_row">
+      <tr>
+        <td></td>
+        <td></td>
+      </tr>
+    </template>
+    <template id="template_results-table__body--empty">
+      <tbody class="results-table-row">
+        <tr id="not-found-message">
+          <td colspan="4">No results found. Check the filters.</td>
+        </tr>
+      </tbody>
+    </template>
+    <template id="template_results-table__tbody">
+      <tbody class="results-table-row">
+        <tr class="collapsible">
+        </tr>
+        <tr class="extras-row">
+          <td class="extra" colspan="4">
+            <div class="extraHTML"></div>
+            <div class="media">
+              <div class="media-container">
+                  <div class="media-container__nav--left">&lt;</div>
+                  <div class="media-container__viewport">
+                    <img src="" />
+                    <video controls>
+                      <source src="" type="video/mp4">
+                    </video>
+                  </div>
+                  <div class="media-container__nav--right">&gt;</div>
+                </div>
+                <div class="media__name"></div>
+                <div class="media__counter"></div>
+            </div>
+            <div class="logwrapper">
+              <div class="logexpander"></div>
+              <div class="log"></div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </template>
+    <!-- END TEMPLATES -->
+    <div class="summary">
+      <div class="summary__data">
+        <h2>Summary</h2>
+        <div class="additional-summary prefix">
+        </div>
+        <p class="run-count">100 tests took 00:30:00.</p>
+        <p class="filter">(Un)check the boxes to filter the results.</p>
+        <div class="summary__reload">
+          <div class="summary__reload__button hidden" onclick="location.reload()">
+            <div>There are still tests running. <br />Reload this page to get the latest results!</div>
+          </div>
+        </div>
+        <div class="summary__spacer"></div>
+        <div class="controls">
+          <div class="filters">
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="failed" >
+            <span class="failed">6 Failed,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="passed" >
+            <span class="passed">94 Passed,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="skipped" disabled>
+            <span class="skipped">0 Skipped,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="xfailed" disabled>
+            <span class="xfailed">0 Expected failures,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="xpassed" disabled>
+            <span class="xpassed">0 Unexpected passes,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="error" disabled>
+            <span class="error">0 Errors,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="rerun" disabled>
+            <span class="rerun">0 Reruns</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="retried" disabled>
+            <span class="retried">0 Retried,</span>
+          </div>
+          <div class="collapse">
+            <button id="show_all_details">Show all details</button>&nbsp;/&nbsp;<button id="hide_all_details">Hide all details</button>
+          </div>
+        </div>
+      </div>
+      <div class="additional-summary summary">
+      </div>
+      <div class="additional-summary postfix">
+      </div>
+    </div>
+    <table id="results-table">
+      <thead id="results-table-head">
+        <tr>
+          <th class="sortable" data-column-type="result">Result</th>
+          <th class="sortable" data-column-type="testId">Test</th>
+          <th class="sortable" data-column-type="duration">Duration</th>
+          <th>Links</th>
+        </tr>
+      </thead>
+    </table>
+  <footer>
+    <div id="data-container" data-jsonblob="{&#34;environment&#34;: {&#34;Python&#34;: &#34;3.14.3&#34;, &#34;Platform&#34;: &#34;Windows-10-10.0.19045-SP0&#34;, &#34;Packages&#34;: {&#34;pytest&#34;: &#34;9.0.3&#34;, &#34;pluggy&#34;: &#34;1.6.0&#34;}, &#34;Plugins&#34;: {&#34;anyio&#34;: &#34;4.13.0&#34;, &#34;html&#34;: &#34;4.2.0&#34;, &#34;metadata&#34;: &#34;3.1.1&#34;}, &#34;JAVA_HOME&#34;: &#34;C:\\Program Files\\Java\\jdk-13.0.2&#34;}, &#34;tests&#34;: {&#34;tests/test_core.py::test_stt_senaryolari[test_01_kardiyoloji_istegi.webm-beklenen_kelimeler0]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_01_kardiyoloji_istegi.webm-beklenen_kelimeler0]&#34;, &#34;duration&#34;: &#34;00:01:11&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_01_kardiyoloji_istegi.webm-beklenen_kelimeler0]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:01:11&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nWhisper modeli yukleniyor, lutfen bekleyin...\nWhisper modeli hazir.\nSes dosyasi boyutu: 44049 byte\nSTT sonucu: Yar\u0131n i\u00e7in kardiyoloji b\u00f6l\u00fcm\u00fcnden randevu almak istiyorum.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_02_dahiliye_sabah.webm-beklenen_kelimeler1]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_02_dahiliye_sabah.webm-beklenen_kelimeler1]&#34;, &#34;duration&#34;: &#34;00:00:16&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_02_dahiliye_sabah.webm-beklenen_kelimeler1]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:16&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 41235 byte\nSTT sonucu: Dahiliye doktoruna sabah saatleri i\u00e7in randevu al.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_03_randevu_iptali.webm-beklenen_kelimeler2]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_03_randevu_iptali.webm-beklenen_kelimeler2]&#34;, &#34;duration&#34;: &#34;00:00:15&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_03_randevu_iptali.webm-beklenen_kelimeler2]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:15&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 34531 byte\nSTT sonucu: Mevcut randevumu iptal etmek istiyorum.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_04_en_yakin_bos.webm-beklenen_kelimeler3]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_04_en_yakin_bos.webm-beklenen_kelimeler3]&#34;, &#34;duration&#34;: &#34;00:00:15&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_04_en_yakin_bos.webm-beklenen_kelimeler3]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:15&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 25639 byte\nSTT sonucu: En yak\u0131n bo\u015f randevu ne zaman?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_05_kbb_tarihli.webm-beklenen_kelimeler4]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_05_kbb_tarihli.webm-beklenen_kelimeler4]&#34;, &#34;duration&#34;: &#34;00:00:17&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_05_kbb_tarihli.webm-beklenen_kelimeler4]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:17&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 46151 byte\nSTT sonucu: Kulak Burun Bo\u011faz b\u00f6l\u00fcm\u00fcnden haftaya sal\u0131 g\u00fcn\u00fcne randevu bak.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_06_cildiye_il.webm-beklenen_kelimeler5]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_06_cildiye_il.webm-beklenen_kelimeler5]&#34;, &#34;duration&#34;: &#34;00:00:17&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_06_cildiye_il.webm-beklenen_kelimeler5]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:17&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 39182 byte\nSTT sonucu: \u0130stanbul&amp;#x27;da cildiye i\u00e7in bir randevu ayarlar m\u0131s\u0131n?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_07_goz_doktoru.webm-beklenen_kelimeler6]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_07_goz_doktoru.webm-beklenen_kelimeler6]&#34;, &#34;duration&#34;: &#34;00:00:17&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_07_goz_doktoru.webm-beklenen_kelimeler6]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:17&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 44376 byte\nSTT sonucu: G\u00f6z hastal\u0131klar\u0131 b\u00f6l\u00fcm\u00fc i\u00e7in cuma g\u00fcn\u00fcne randevu istiyorum.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_08_ortopedi_sorgu.webm-beklenen_kelimeler7]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_08_ortopedi_sorgu.webm-beklenen_kelimeler7]&#34;, &#34;duration&#34;: &#34;00:00:16&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_08_ortopedi_sorgu.webm-beklenen_kelimeler7]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:16&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 36509 byte\nSTT sonucu: Ortopedi b\u00f6l\u00fcm\u00fc doktorlar\u0131na randevu var m\u0131?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_09_tc_sorgulama.webm-beklenen_kelimeler8]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_09_tc_sorgulama.webm-beklenen_kelimeler8]&#34;, &#34;duration&#34;: &#34;00:00:15&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_09_tc_sorgulama.webm-beklenen_kelimeler8]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:15&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 25330 byte\nSTT sonucu: Randevumu sorgulamak istiyorum.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_10_noroloji_ogle.webm-beklenen_kelimeler9]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_10_noroloji_ogle.webm-beklenen_kelimeler9]&#34;, &#34;duration&#34;: &#34;00:00:17&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_10_noroloji_ogle.webm-beklenen_kelimeler9]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:17&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 40853 byte\nSTT sonucu: N\u00f6roloji i\u00e7in \u00f6\u011fleden sonra m\u00fcsaitlik var m\u0131?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_11_gastro_mide.webm-beklenen_kelimeler10]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_11_gastro_mide.webm-beklenen_kelimeler10]&#34;, &#34;duration&#34;: &#34;00:00:19&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_11_gastro_mide.webm-beklenen_kelimeler10]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:19&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 51545 byte\nSTT sonucu: Mide a\u011fr\u0131m var, gastroenteroloji b\u00f6l\u00fcm\u00fcne randevu alabilir miyim?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_12_gastro_endoskopi.webm-beklenen_kelimeler11]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_12_gastro_endoskopi.webm-beklenen_kelimeler11]&#34;, &#34;duration&#34;: &#34;00:00:18&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_12_gastro_endoskopi.webm-beklenen_kelimeler11]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:18&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;dosya_adi = &amp;#x27;test_12_gastro_endoskopi.webm&amp;#x27;, beklenen_kelimeler = [&amp;#x27;endoskopi&amp;#x27;, &amp;#x27;gastroenteroloji&amp;#x27;]\n\n    @pytest.mark.parametrize(&amp;quot;dosya_adi, beklenen_kelimeler&amp;quot;, STT_TEST_VERILERI)\n    def test_stt_senaryolari(dosya_adi, beklenen_kelimeler):\n        &amp;quot;&amp;quot;&amp;quot;\n        [TEZ KAPSAMI] Sesli asistan\u0131n 10 farkl\u0131 MHRS kullan\u0131m senaryosunda\n        .webm dosyalar\u0131n\u0131 do\u011fru analiz edip metne d\u00f6kebildi\u011fini test eder.\n        &amp;quot;&amp;quot;&amp;quot;\n        dosya_yolu = os.path.join(&amp;quot;tests/test_data&amp;quot;, dosya_adi)\n    \n        # 1. A\u015fama: Test dosyas\u0131n\u0131n \u00fcretilmi\u015f ve var oldu\u011fundan emin ol\n        # (\u00d6nceki Python scripti ile test_data klas\u00f6r\u00fcne dosyalar\u0131 \u00fcretmi\u015f olman gerekir)\n        # \u015eimdilik sim\u00fclasyonun \u00e7al\u0131\u015fmas\u0131 i\u00e7in bu kontrol\u00fc pasife al\u0131yorum:\n        assert os.path.exists(dosya_yolu), f&amp;quot;HATA: Ses dosyas\u0131 bulunamad\u0131 -&amp;gt; {dosya_yolu}&amp;quot;\n    \n        # 2. A\u015fama: Sesi Metne \u00c7evir (ACT)\n        # GER\u00c7EK PROJEDE \u015e\u00d6YLE OLACAK: gercek_metin = sesi_metne_cevir(dosya_yolu)\n        gercek_metin = sesi_metne_cevir(dosya_yolu)\n    \n        gercek_metin_kucuk = gercek_metin.replace(&amp;quot;\u0130&amp;quot;, &amp;quot;i&amp;quot;).replace(&amp;quot;I&amp;quot;, &amp;quot;\u0131&amp;quot;).lower()\n    \n        # 3. A\u015fama: Do\u011frulama (ASSERT)\n        assert len(gercek_metin_kucuk) &amp;gt; 0, &amp;quot;Sesi metne \u00e7evirme ba\u015far\u0131s\u0131z (bo\u015f sonu\u00e7).&amp;quot;\n    \n        for kelime in beklenen_kelimeler:\n&amp;gt;           assert kelime in gercek_metin_kucuk, (\n                f&amp;quot;BA\u015eARISIZ: &amp;#x27;{kelime}&amp;#x27; kelimesi &amp;#x27;{dosya_adi}&amp;#x27; \u00e7\u00f6z\u00fcmlemesinde bulunamad\u0131! &amp;quot;\n                f&amp;quot;Whisper \u00c7\u0131kt\u0131s\u0131: &amp;#x27;{gercek_metin}&amp;#x27;&amp;quot;\n            )\nE           AssertionError: BA\u015eARISIZ: &amp;#x27;gastroenteroloji&amp;#x27; kelimesi &amp;#x27;test_12_gastro_endoskopi.webm&amp;#x27; \u00e7\u00f6z\u00fcmlemesinde bulunamad\u0131! Whisper \u00c7\u0131kt\u0131s\u0131: &amp;#x27;Dastroenteroloji b\u00f6l\u00fcm\u00fcnden endoskopi g\u00f6stermek i\u00e7in g\u00fcn almak istiyorum.&amp;#x27;\nE           assert &amp;#x27;gastroenteroloji&amp;#x27; in &amp;#x27;dastroenteroloji b\u00f6l\u00fcm\u00fcnden endoskopi g\u00f6stermek i\u00e7in g\u00fcn almak istiyorum.&amp;#x27;\n\ntests\\test_core.py:162: AssertionError\n\n----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 58494 byte\nSTT sonucu: Dastroenteroloji b\u00f6l\u00fcm\u00fcnden endoskopi g\u00f6stermek i\u00e7in g\u00fcn almak istiyorum.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_13_gastro_reflu.webm-beklenen_kelimeler12]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_13_gastro_reflu.webm-beklenen_kelimeler12]&#34;, &#34;duration&#34;: &#34;00:00:18&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_13_gastro_reflu.webm-beklenen_kelimeler12]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:18&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 53304 byte\nSTT sonucu: Refl\u00fc \u015fikayetim i\u00e7in gastroenteroloji b\u00f6l\u00fcm\u00fcnden randevu ayarla.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_14_gastro_karin_agrisi.webm-beklenen_kelimeler13]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_14_gastro_karin_agrisi.webm-beklenen_kelimeler13]&#34;, &#34;duration&#34;: &#34;00:00:20&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_14_gastro_karin_agrisi.webm-beklenen_kelimeler13]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:20&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;dosya_adi = &amp;#x27;test_14_gastro_karin_agrisi.webm&amp;#x27;, beklenen_kelimeler = [&amp;#x27;kar\u0131n&amp;#x27;, &amp;#x27;acil&amp;#x27;, &amp;#x27;gastroenteroloji&amp;#x27;]\n\n    @pytest.mark.parametrize(&amp;quot;dosya_adi, beklenen_kelimeler&amp;quot;, STT_TEST_VERILERI)\n    def test_stt_senaryolari(dosya_adi, beklenen_kelimeler):\n        &amp;quot;&amp;quot;&amp;quot;\n        [TEZ KAPSAMI] Sesli asistan\u0131n 10 farkl\u0131 MHRS kullan\u0131m senaryosunda\n        .webm dosyalar\u0131n\u0131 do\u011fru analiz edip metne d\u00f6kebildi\u011fini test eder.\n        &amp;quot;&amp;quot;&amp;quot;\n        dosya_yolu = os.path.join(&amp;quot;tests/test_data&amp;quot;, dosya_adi)\n    \n        # 1. A\u015fama: Test dosyas\u0131n\u0131n \u00fcretilmi\u015f ve var oldu\u011fundan emin ol\n        # (\u00d6nceki Python scripti ile test_data klas\u00f6r\u00fcne dosyalar\u0131 \u00fcretmi\u015f olman gerekir)\n        # \u015eimdilik sim\u00fclasyonun \u00e7al\u0131\u015fmas\u0131 i\u00e7in bu kontrol\u00fc pasife al\u0131yorum:\n        assert os.path.exists(dosya_yolu), f&amp;quot;HATA: Ses dosyas\u0131 bulunamad\u0131 -&amp;gt; {dosya_yolu}&amp;quot;\n    \n        # 2. A\u015fama: Sesi Metne \u00c7evir (ACT)\n        # GER\u00c7EK PROJEDE \u015e\u00d6YLE OLACAK: gercek_metin = sesi_metne_cevir(dosya_yolu)\n        gercek_metin = sesi_metne_cevir(dosya_yolu)\n    \n        gercek_metin_kucuk = gercek_metin.replace(&amp;quot;\u0130&amp;quot;, &amp;quot;i&amp;quot;).replace(&amp;quot;I&amp;quot;, &amp;quot;\u0131&amp;quot;).lower()\n    \n        # 3. A\u015fama: Do\u011frulama (ASSERT)\n        assert len(gercek_metin_kucuk) &amp;gt; 0, &amp;quot;Sesi metne \u00e7evirme ba\u015far\u0131s\u0131z (bo\u015f sonu\u00e7).&amp;quot;\n    \n        for kelime in beklenen_kelimeler:\n&amp;gt;           assert kelime in gercek_metin_kucuk, (\n                f&amp;quot;BA\u015eARISIZ: &amp;#x27;{kelime}&amp;#x27; kelimesi &amp;#x27;{dosya_adi}&amp;#x27; \u00e7\u00f6z\u00fcmlemesinde bulunamad\u0131! &amp;quot;\n                f&amp;quot;Whisper \u00c7\u0131kt\u0131s\u0131: &amp;#x27;{gercek_metin}&amp;#x27;&amp;quot;\n            )\nE           AssertionError: BA\u015eARISIZ: &amp;#x27;gastroenteroloji&amp;#x27; kelimesi &amp;#x27;test_14_gastro_karin_agrisi.webm&amp;#x27; \u00e7\u00f6z\u00fcmlemesinde bulunamad\u0131! Whisper \u00c7\u0131kt\u0131s\u0131: &amp;#x27;\u015eiddetli kar\u0131n a\u011fr\u0131m var. Dastroenterolojiye acil randevu alabilir miyiz?&amp;#x27;\nE           assert &amp;#x27;gastroenteroloji&amp;#x27; in &amp;#x27;\u015fiddetli kar\u0131n a\u011fr\u0131m var. dastroenterolojiye acil randevu alabilir miyiz?&amp;#x27;\n\ntests\\test_core.py:162: AssertionError\n\n----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 57120 byte\nSTT sonucu: \u015eiddetli kar\u0131n a\u011fr\u0131m var. Dastroenterolojiye acil randevu alabilir miyiz?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_15_gastro_hazimsizlik.webm-beklenen_kelimeler14]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_15_gastro_hazimsizlik.webm-beklenen_kelimeler14]&#34;, &#34;duration&#34;: &#34;00:00:18&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_15_gastro_hazimsizlik.webm-beklenen_kelimeler14]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:18&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 54959 byte\nSTT sonucu: Haz\u0131ms\u0131zl\u0131k \u015fikayetiyle gastroenterolojiye muayene olmak istiyorum.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_16_gastro_karaciyer.webm-beklenen_kelimeler15]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_16_gastro_karaciyer.webm-beklenen_kelimeler15]&#34;, &#34;duration&#34;: &#34;00:00:17&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_16_gastro_karaciyer.webm-beklenen_kelimeler15]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:17&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 55236 byte\nSTT sonucu: Karaci\u011fer enzimlerim y\u00fcksek \u00e7\u0131km\u0131\u015f, gastroenterolojiye randevu bu.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_17_gastro_kanama.webm-beklenen_kelimeler16]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_17_gastro_kanama.webm-beklenen_kelimeler16]&#34;, &#34;duration&#34;: &#34;00:00:17&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_17_gastro_kanama.webm-beklenen_kelimeler16]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:17&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 56516 byte\nSTT sonucu: Mide rahats\u0131zl\u0131\u011f\u0131 \u015f\u00fcphesiyle acil gastroenteroloji randevusu laz\u0131m.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_18_genel_cerrahi_kontrol.webm-beklenen_kelimeler17]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_18_genel_cerrahi_kontrol.webm-beklenen_kelimeler17]&#34;, &#34;duration&#34;: &#34;00:00:18&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_18_genel_cerrahi_kontrol.webm-beklenen_kelimeler17]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:18&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 57136 byte\nSTT sonucu: Genel cerrahi b\u00f6l\u00fcm\u00fcnde ameliyat sonras\u0131 kontrol\u00fcm i\u00e7in randevu bak\u0131yorum.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_19_genel_cerrahi_safra.webm-beklenen_kelimeler18]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_19_genel_cerrahi_safra.webm-beklenen_kelimeler18]&#34;, &#34;duration&#34;: &#34;00:00:18&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_19_genel_cerrahi_safra.webm-beklenen_kelimeler18]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:18&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 52811 byte\nSTT sonucu: Genel Cerrahiye Safra Kesesi \u015eikayeti ile Haftaya Randevu Al\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_20_genel_cerrahi_dikis.webm-beklenen_kelimeler19]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_20_genel_cerrahi_dikis.webm-beklenen_kelimeler19]&#34;, &#34;duration&#34;: &#34;00:00:19&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_20_genel_cerrahi_dikis.webm-beklenen_kelimeler19]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:19&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 50703 byte\nSTT sonucu: Diki\u015flerimi ald\u0131rmak i\u00e7in genel cerrahiye randevu bulabilir misin?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_21_genel_cerrahi_tiroid.webm-beklenen_kelimeler20]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_21_genel_cerrahi_tiroid.webm-beklenen_kelimeler20]&#34;, &#34;duration&#34;: &#34;00:00:17&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_21_genel_cerrahi_tiroid.webm-beklenen_kelimeler20]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:17&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 51553 byte\nSTT sonucu: Tiroid ameliyat\u0131 g\u00f6r\u00fc\u015fmesi i\u00e7in genel cerrahiye randevu istiyorum.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_22_genel_cerrahi_kil_donmesi.webm-beklenen_kelimeler21]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_22_genel_cerrahi_kil_donmesi.webm-beklenen_kelimeler21]&#34;, &#34;duration&#34;: &#34;00:00:16&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_22_genel_cerrahi_kil_donmesi.webm-beklenen_kelimeler21]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:16&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 48232 byte\nSTT sonucu: K\u0131l d\u00f6nmesi \u015fikayeti i\u00e7in genel cerrahi b\u00f6l\u00fcm\u00fcne yer var m\u0131?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_23_genel_cerrahi_apandisit.webm-beklenen_kelimeler22]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_23_genel_cerrahi_apandisit.webm-beklenen_kelimeler22]&#34;, &#34;duration&#34;: &#34;00:00:17&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_23_genel_cerrahi_apandisit.webm-beklenen_kelimeler22]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:17&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 53526 byte\nSTT sonucu: Apandisit \u015f\u00fcphesiyle genel cerrahi poliklini\u011fine g\u00f6r\u00fcnmek istiyorum.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_24_genel_cerrahi_yara.webm-beklenen_kelimeler23]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_24_genel_cerrahi_yara.webm-beklenen_kelimeler23]&#34;, &#34;duration&#34;: &#34;00:00:19&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_24_genel_cerrahi_yara.webm-beklenen_kelimeler23]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:19&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 55472 byte\nSTT sonucu: Kapanmayan yaram var, genel cerrahi poliklini\u011fine randevu olu\u015ftur.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_25_psikiyatri_terapi.webm-beklenen_kelimeler24]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_25_psikiyatri_terapi.webm-beklenen_kelimeler24]&#34;, &#34;duration&#34;: &#34;00:00:19&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_25_psikiyatri_terapi.webm-beklenen_kelimeler24]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:19&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 50360 byte\nSTT sonucu: Psikiyatri b\u00f6l\u00fcm\u00fcnden haftaya \u00e7ar\u015famba g\u00fcn\u00fc i\u00e7in bo\u015fluk var m\u0131?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_26_psikiyatri_ilac.webm-beklenen_kelimeler25]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_26_psikiyatri_ilac.webm-beklenen_kelimeler25]&#34;, &#34;duration&#34;: &#34;00:00:21&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_26_psikiyatri_ilac.webm-beklenen_kelimeler25]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:21&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 56585 byte\nSTT sonucu: Psikiyatri doktorumdan ila\u00e7 yazd\u0131rmak i\u00e7in k\u0131sa bir randevu alabilir miyim?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_27_psikiyatri_uykusuzluk.webm-beklenen_kelimeler26]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_27_psikiyatri_uykusuzluk.webm-beklenen_kelimeler26]&#34;, &#34;duration&#34;: &#34;00:00:21&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_27_psikiyatri_uykusuzluk.webm-beklenen_kelimeler26]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:21&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 59016 byte\nSTT sonucu: Uykusuzluk problemi \u00e7ekiyorum. Psikiyatri b\u00f6l\u00fcm\u00fcne randevu almak istiyorum.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_28_psikiyatri_kaygi.webm-beklenen_kelimeler27]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_28_psikiyatri_kaygi.webm-beklenen_kelimeler27]&#34;, &#34;duration&#34;: &#34;00:00:17&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_28_psikiyatri_kaygi.webm-beklenen_kelimeler27]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:17&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 50691 byte\nSTT sonucu: Kayg\u0131 bozuklu\u011fu i\u00e7in psikiyatri doktorumdan yeni bir randevu al.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_29_psikiyatri_cocuk.webm-beklenen_kelimeler28]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_29_psikiyatri_cocuk.webm-beklenen_kelimeler28]&#34;, &#34;duration&#34;: &#34;00:00:17&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_29_psikiyatri_cocuk.webm-beklenen_kelimeler28]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:17&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 52273 byte\nSTT sonucu: \u00c7ocuk psikiyatrisi b\u00f6l\u00fcm\u00fc i\u00e7in haftaya bir randevu olu\u015fturur musun?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_30_psikiyatri_depresyon.webm-beklenen_kelimeler29]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_30_psikiyatri_depresyon.webm-beklenen_kelimeler29]&#34;, &#34;duration&#34;: &#34;00:00:18&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_30_psikiyatri_depresyon.webm-beklenen_kelimeler29]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:18&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 58480 byte\nSTT sonucu: Depresyon tedavim i\u00e7in psikiyatri b\u00f6l\u00fcm\u00fcnden ayl\u0131k kontrol randevumu al.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_31_psikiyatri_panik.webm-beklenen_kelimeler30]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_31_psikiyatri_panik.webm-beklenen_kelimeler30]&#34;, &#34;duration&#34;: &#34;00:00:17&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_31_psikiyatri_panik.webm-beklenen_kelimeler30]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:17&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 51758 byte\nSTT sonucu: Panik atak ge\u00e7iriyorum, psikiyatriden hemen bir randevu bulur musun?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_32_uroloji_bobrek.webm-beklenen_kelimeler31]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_32_uroloji_bobrek.webm-beklenen_kelimeler31]&#34;, &#34;duration&#34;: &#34;00:00:17&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_32_uroloji_bobrek.webm-beklenen_kelimeler31]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:17&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 45693 byte\nSTT sonucu: \u00dcroloji doktorundan en erken tarihe randevu bulur musun?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_33_uroloji_kontrol.webm-beklenen_kelimeler32]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_33_uroloji_kontrol.webm-beklenen_kelimeler32]&#34;, &#34;duration&#34;: &#34;00:00:16&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_33_uroloji_kontrol.webm-beklenen_kelimeler32]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:16&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 43602 byte\nSTT sonucu: \u00dcroloji b\u00f6l\u00fcm\u00fcne kontrol randevusu olu\u015fturmak istiyorum.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_34_uroloji_tahlil.webm-beklenen_kelimeler33]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_34_uroloji_tahlil.webm-beklenen_kelimeler33]&#34;, &#34;duration&#34;: &#34;00:00:17&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_34_uroloji_tahlil.webm-beklenen_kelimeler33]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:17&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 48003 byte\nSTT sonucu: \u00dcroloji b\u00f6l\u00fcm\u00fcne tahlil sonu\u00e7lar\u0131m\u0131 g\u00f6stermek i\u00e7in yer var m\u0131?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_35_uroloji_prostat.webm-beklenen_kelimeler34]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_35_uroloji_prostat.webm-beklenen_kelimeler34]&#34;, &#34;duration&#34;: &#34;00:00:17&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_35_uroloji_prostat.webm-beklenen_kelimeler34]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:17&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 59230 byte\nSTT sonucu: Prostat kontrol\u00fc i\u00e7in \u00fcroloji b\u00f6l\u00fcm\u00fcnden sabah saatlerine randevu ayarla.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_36_uroloji_yanma.webm-beklenen_kelimeler35]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_36_uroloji_yanma.webm-beklenen_kelimeler35]&#34;, &#34;duration&#34;: &#34;00:00:16&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_36_uroloji_yanma.webm-beklenen_kelimeler35]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:16&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 52412 byte\nSTT sonucu: \u0130drarda yanma \u015fikayetiyle \u00fcroloji doktoruna g\u00f6r\u00fcnmem gerekiyor.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_37_uroloji_sonda.webm-beklenen_kelimeler36]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_37_uroloji_sonda.webm-beklenen_kelimeler36]&#34;, &#34;duration&#34;: &#34;00:00:16&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_37_uroloji_sonda.webm-beklenen_kelimeler36]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:16&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 54088 byte\nSTT sonucu: Sonda de\u011fi\u015fimi i\u00e7in \u00fcroloji b\u00f6l\u00fcm\u00fcne sabah erkenden randevu laz\u0131m.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_38_uroloji_agri.webm-beklenen_kelimeler37]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_38_uroloji_agri.webm-beklenen_kelimeler37]&#34;, &#34;duration&#34;: &#34;00:00:17&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_38_uroloji_agri.webm-beklenen_kelimeler37]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:17&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 41311 byte\nSTT sonucu: B\u00f6breklerim \u00e7ok a\u011fr\u0131yor. \u00dcrolojiye randevu verin.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_39_kadin_dogum_gebelik.webm-beklenen_kelimeler38]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_39_kadin_dogum_gebelik.webm-beklenen_kelimeler38]&#34;, &#34;duration&#34;: &#34;00:00:17&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_39_kadin_dogum_gebelik.webm-beklenen_kelimeler38]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:17&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 53068 byte\nSTT sonucu: Kad\u0131n hastal\u0131klar\u0131 ve do\u011fum b\u00f6l\u00fcm\u00fcne gebelik takibi i\u00e7in randevu alaca\u011f\u0131m.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_40_kadin_dogum_ultrason.webm-beklenen_kelimeler39]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_40_kadin_dogum_ultrason.webm-beklenen_kelimeler39]&#34;, &#34;duration&#34;: &#34;00:00:17&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_40_kadin_dogum_ultrason.webm-beklenen_kelimeler39]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:17&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 48159 byte\nSTT sonucu: Kad\u0131n do\u011fum b\u00f6l\u00fcm\u00fcnden ultrason i\u00e7in per\u015fembe g\u00fcn\u00fcne yer var m\u0131?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_41_kadin_dogum_rutin.webm-beklenen_kelimeler40]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_41_kadin_dogum_rutin.webm-beklenen_kelimeler40]&#34;, &#34;duration&#34;: &#34;00:00:16&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_41_kadin_dogum_rutin.webm-beklenen_kelimeler40]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:16&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 51078 byte\nSTT sonucu: Kad\u0131n hastal\u0131klar\u0131 b\u00f6l\u00fcm\u00fcne rutin kontrol i\u00e7in bir randevu olu\u015ftur.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_42_kadin_dogum_test.webm-beklenen_kelimeler41]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_42_kadin_dogum_test.webm-beklenen_kelimeler41]&#34;, &#34;duration&#34;: &#34;00:00:16&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_42_kadin_dogum_test.webm-beklenen_kelimeler41]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:16&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 46538 byte\nSTT sonucu: Kad\u0131n do\u011fum b\u00f6l\u00fcm\u00fcne tarama testi i\u00e7in randevu almak istiyorum.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_43_kadin_dogum_kist.webm-beklenen_kelimeler42]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_43_kadin_dogum_kist.webm-beklenen_kelimeler42]&#34;, &#34;duration&#34;: &#34;00:00:17&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_43_kadin_dogum_kist.webm-beklenen_kelimeler42]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:17&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 53397 byte\nSTT sonucu: Kist kontrol\u00fc i\u00e7in kad\u0131n hastal\u0131klar\u0131 b\u00f6l\u00fcm\u00fcnden randevu ayarlar m\u0131s\u0131n?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_44_kadin_dogum_miyom.webm-beklenen_kelimeler43]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_44_kadin_dogum_miyom.webm-beklenen_kelimeler43]&#34;, &#34;duration&#34;: &#34;00:00:17&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_44_kadin_dogum_miyom.webm-beklenen_kelimeler43]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:17&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;dosya_adi = &amp;#x27;test_44_kadin_dogum_miyom.webm&amp;#x27;, beklenen_kelimeler = [&amp;#x27;miyom&amp;#x27;, &amp;#x27;kad\u0131n do\u011fum&amp;#x27;, &amp;#x27;hafta&amp;#x27;]\n\n    @pytest.mark.parametrize(&amp;quot;dosya_adi, beklenen_kelimeler&amp;quot;, STT_TEST_VERILERI)\n    def test_stt_senaryolari(dosya_adi, beklenen_kelimeler):\n        &amp;quot;&amp;quot;&amp;quot;\n        [TEZ KAPSAMI] Sesli asistan\u0131n 10 farkl\u0131 MHRS kullan\u0131m senaryosunda\n        .webm dosyalar\u0131n\u0131 do\u011fru analiz edip metne d\u00f6kebildi\u011fini test eder.\n        &amp;quot;&amp;quot;&amp;quot;\n        dosya_yolu = os.path.join(&amp;quot;tests/test_data&amp;quot;, dosya_adi)\n    \n        # 1. A\u015fama: Test dosyas\u0131n\u0131n \u00fcretilmi\u015f ve var oldu\u011fundan emin ol\n        # (\u00d6nceki Python scripti ile test_data klas\u00f6r\u00fcne dosyalar\u0131 \u00fcretmi\u015f olman gerekir)\n        # \u015eimdilik sim\u00fclasyonun \u00e7al\u0131\u015fmas\u0131 i\u00e7in bu kontrol\u00fc pasife al\u0131yorum:\n        assert os.path.exists(dosya_yolu), f&amp;quot;HATA: Ses dosyas\u0131 bulunamad\u0131 -&amp;gt; {dosya_yolu}&amp;quot;\n    \n        # 2. A\u015fama: Sesi Metne \u00c7evir (ACT)\n        # GER\u00c7EK PROJEDE \u015e\u00d6YLE OLACAK: gercek_metin = sesi_metne_cevir(dosya_yolu)\n        gercek_metin = sesi_metne_cevir(dosya_yolu)\n    \n        gercek_metin_kucuk = gercek_metin.replace(&amp;quot;\u0130&amp;quot;, &amp;quot;i&amp;quot;).replace(&amp;quot;I&amp;quot;, &amp;quot;\u0131&amp;quot;).lower()\n    \n        # 3. A\u015fama: Do\u011frulama (ASSERT)\n        assert len(gercek_metin_kucuk) &amp;gt; 0, &amp;quot;Sesi metne \u00e7evirme ba\u015far\u0131s\u0131z (bo\u015f sonu\u00e7).&amp;quot;\n    \n        for kelime in beklenen_kelimeler:\n&amp;gt;           assert kelime in gercek_metin_kucuk, (\n                f&amp;quot;BA\u015eARISIZ: &amp;#x27;{kelime}&amp;#x27; kelimesi &amp;#x27;{dosya_adi}&amp;#x27; \u00e7\u00f6z\u00fcmlemesinde bulunamad\u0131! &amp;quot;\n                f&amp;quot;Whisper \u00c7\u0131kt\u0131s\u0131: &amp;#x27;{gercek_metin}&amp;#x27;&amp;quot;\n            )\nE           AssertionError: BA\u015eARISIZ: &amp;#x27;miyom&amp;#x27; kelimesi &amp;#x27;test_44_kadin_dogum_miyom.webm&amp;#x27; \u00e7\u00f6z\u00fcmlemesinde bulunamad\u0131! Whisper \u00c7\u0131kt\u0131s\u0131: &amp;#x27;M\u0130OM tedavisi i\u00e7in kad\u0131n do\u011fum b\u00f6l\u00fcm\u00fcne \u00f6n\u00fcm\u00fczdeki hafta yer var m\u0131?&amp;#x27;\nE           assert &amp;#x27;miyom&amp;#x27; in &amp;#x27;miom tedavisi i\u00e7in kad\u0131n do\u011fum b\u00f6l\u00fcm\u00fcne \u00f6n\u00fcm\u00fczdeki hafta yer var m\u0131?&amp;#x27;\n\ntests\\test_core.py:162: AssertionError\n\n----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 51315 byte\nSTT sonucu: M\u0130OM tedavisi i\u00e7in kad\u0131n do\u011fum b\u00f6l\u00fcm\u00fcne \u00f6n\u00fcm\u00fczdeki hafta yer var m\u0131?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_45_kadin_dogum_sma.webm-beklenen_kelimeler44]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_45_kadin_dogum_sma.webm-beklenen_kelimeler44]&#34;, &#34;duration&#34;: &#34;00:00:17&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_45_kadin_dogum_sma.webm-beklenen_kelimeler44]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:17&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 60783 byte\nSTT sonucu: SMA taramas\u0131 i\u00e7in kad\u0131n hastal\u0131klar\u0131 ve do\u011fum b\u00f6l\u00fcm\u00fcnden randevu istiyorum.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_46_dahiliye_kan_tahlili.webm-beklenen_kelimeler45]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_46_dahiliye_kan_tahlili.webm-beklenen_kelimeler45]&#34;, &#34;duration&#34;: &#34;00:00:17&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_46_dahiliye_kan_tahlili.webm-beklenen_kelimeler45]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:17&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 55527 byte\nSTT sonucu: Dahiliye b\u00f6l\u00fcm\u00fcne kan tahlili sonu\u00e7lar\u0131m\u0131 g\u00f6stermek i\u00e7in randevu istiyorum.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_47_kardiyoloji_eko.webm-beklenen_kelimeler46]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_47_kardiyoloji_eko.webm-beklenen_kelimeler46]&#34;, &#34;duration&#34;: &#34;00:00:16&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_47_kardiyoloji_eko.webm-beklenen_kelimeler46]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:16&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 61295 byte\nSTT sonucu: Kardiyoloji doktoruna EKG \u00e7ektirmek i\u00e7in sabah erkenden randevu laz\u0131m.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_48_dahiliye_seker.webm-beklenen_kelimeler47]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_48_dahiliye_seker.webm-beklenen_kelimeler47]&#34;, &#34;duration&#34;: &#34;00:00:18&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_48_dahiliye_seker.webm-beklenen_kelimeler47]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:18&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 58101 byte\nSTT sonucu: \u015eeker hastal\u0131\u011f\u0131 kontrol\u00fcm i\u00e7in i\u00e7 hastal\u0131klar\u0131 b\u00f6l\u00fcm\u00fcnden randevu istiyorum.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_49_kardiyoloji_carpinti.webm-beklenen_kelimeler48]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_49_kardiyoloji_carpinti.webm-beklenen_kelimeler48]&#34;, &#34;duration&#34;: &#34;00:00:19&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_49_kardiyoloji_carpinti.webm-beklenen_kelimeler48]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:19&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 52546 byte\nSTT sonucu: Kalp \u00e7arp\u0131nt\u0131m var, kardiyoloji b\u00f6l\u00fcm\u00fcne bug\u00fcn i\u00e7in yer bulunur mu?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_50_dahiliye_tansiyon.webm-beklenen_kelimeler49]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_50_dahiliye_tansiyon.webm-beklenen_kelimeler49]&#34;, &#34;duration&#34;: &#34;00:00:19&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_50_dahiliye_tansiyon.webm-beklenen_kelimeler49]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:19&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 52236 byte\nSTT sonucu: Tansiyonun s\u00fcrekli y\u00fcksek, dahiliye b\u00f6l\u00fcm\u00fcnden hemen randevu al.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_51_kardiyoloji_stent.webm-beklenen_kelimeler50]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_51_kardiyoloji_stent.webm-beklenen_kelimeler50]&#34;, &#34;duration&#34;: &#34;00:00:18&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_51_kardiyoloji_stent.webm-beklenen_kelimeler50]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:18&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 56216 byte\nSTT sonucu: Stent kontrol\u00fcm i\u00e7in kardiyoloji b\u00f6l\u00fcm\u00fcne haftaya cuma randevu bak.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_52_dahiliye_kolesterol.webm-beklenen_kelimeler51]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_52_dahiliye_kolesterol.webm-beklenen_kelimeler51]&#34;, &#34;duration&#34;: &#34;00:00:18&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_52_dahiliye_kolesterol.webm-beklenen_kelimeler51]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:18&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 53333 byte\nSTT sonucu: Kolesterol ilac\u0131m\u0131 yazd\u0131rmak i\u00e7in i\u00e7 hastal\u0131klar\u0131 b\u00f6l\u00fcm\u00fcne randevu bu.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_53_kardiyoloji_nefes_darligi.webm-beklenen_kelimeler52]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_53_kardiyoloji_nefes_darligi.webm-beklenen_kelimeler52]&#34;, &#34;duration&#34;: &#34;00:00:19&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_53_kardiyoloji_nefes_darligi.webm-beklenen_kelimeler52]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:19&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 51187 byte\nSTT sonucu: Nefes darl\u0131\u011f\u0131 \u00e7ekiyorum. Kardiyoloji b\u00f6l\u00fcm\u00fcne bug\u00fcn randevu var m\u0131?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_54_dahiliye_yorgunluk.webm-beklenen_kelimeler53]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_54_dahiliye_yorgunluk.webm-beklenen_kelimeler53]&#34;, &#34;duration&#34;: &#34;00:00:18&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_54_dahiliye_yorgunluk.webm-beklenen_kelimeler53]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:18&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 51097 byte\nSTT sonucu: S\u00fcrekli halsizlik ve yorgunluk i\u00e7in dahiliyeden randevu istiyorum.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_55_kardiyoloji_ritim.webm-beklenen_kelimeler54]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_55_kardiyoloji_ritim.webm-beklenen_kelimeler54]&#34;, &#34;duration&#34;: &#34;00:00:18&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_55_kardiyoloji_ritim.webm-beklenen_kelimeler54]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:18&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 49320 byte\nSTT sonucu: Ritim bozuklu\u011fu \u015fikayetiyle kardiyoloji b\u00f6l\u00fcm\u00fcne randevu al.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_56_cildiye_sivilce.webm-beklenen_kelimeler55]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_56_cildiye_sivilce.webm-beklenen_kelimeler55]&#34;, &#34;duration&#34;: &#34;00:00:18&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_56_cildiye_sivilce.webm-beklenen_kelimeler55]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:18&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 58588 byte\nSTT sonucu: Cildiye b\u00f6l\u00fcm\u00fcnden sivilce tedavisi i\u00e7in uygun bir saate randevu bakar m\u0131s\u0131n?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_57_goz_kontrol_cuma.webm-beklenen_kelimeler56]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_57_goz_kontrol_cuma.webm-beklenen_kelimeler56]&#34;, &#34;duration&#34;: &#34;00:00:17&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_57_goz_kontrol_cuma.webm-beklenen_kelimeler56]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:17&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 46871 byte\nSTT sonucu: Cuma \u00f6\u011fleden sonra g\u00f6z hastal\u0131klar\u0131 i\u00e7in randevum var m\u0131yd\u0131?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_58_cildiye_alerji.webm-beklenen_kelimeler57]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_58_cildiye_alerji.webm-beklenen_kelimeler57]&#34;, &#34;duration&#34;: &#34;00:00:19&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_58_cildiye_alerji.webm-beklenen_kelimeler57]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:19&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 62620 byte\nSTT sonucu: V\u00fccudumda k\u0131zar\u0131kl\u0131klar \u00e7\u0131kt\u0131, dermatoloji b\u00f6l\u00fcm\u00fcne en yak\u0131n randevuyu verin.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_59_goz_numara_degisimi.webm-beklenen_kelimeler58]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_59_goz_numara_degisimi.webm-beklenen_kelimeler58]&#34;, &#34;duration&#34;: &#34;00:00:18&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_59_goz_numara_degisimi.webm-beklenen_kelimeler58]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:18&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 49220 byte\nSTT sonucu: G\u00f6zl\u00fck numaram\u0131 de\u011fi\u015ftirmek i\u00e7in g\u00f6z doktoruna randevu alaca\u011f\u0131m.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_60_cildiye_sac_dokulmesi.webm-beklenen_kelimeler59]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_60_cildiye_sac_dokulmesi.webm-beklenen_kelimeler59]&#34;, &#34;duration&#34;: &#34;00:00:18&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_60_cildiye_sac_dokulmesi.webm-beklenen_kelimeler59]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:18&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 52759 byte\nSTT sonucu: A\u015f\u0131r\u0131 sa\u00e7 d\u00f6k\u00fclmem var, cildiye b\u00f6l\u00fcm\u00fcne muayene olmak istiyorum.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_61_goz_katarakt.webm-beklenen_kelimeler60]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_61_goz_katarakt.webm-beklenen_kelimeler60]&#34;, &#34;duration&#34;: &#34;00:00:18&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_61_goz_katarakt.webm-beklenen_kelimeler60]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:18&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 50728 byte\nSTT sonucu: Katarakt ameliyat\u0131 kontrol\u00fc i\u00e7in g\u00f6z hastal\u0131klar\u0131na randevu al.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_62_cildiye_ben_kontrolu.webm-beklenen_kelimeler61]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_62_cildiye_ben_kontrolu.webm-beklenen_kelimeler61]&#34;, &#34;duration&#34;: &#34;00:00:18&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_62_cildiye_ben_kontrolu.webm-beklenen_kelimeler61]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:18&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 54381 byte\nSTT sonucu: V\u00fccudumdaki benlerin kontrol\u00fc i\u00e7in dermatolojiden randevu bakar m\u0131s\u0131n?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_63_goz_lens.webm-beklenen_kelimeler62]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_63_goz_lens.webm-beklenen_kelimeler62]&#34;, &#34;duration&#34;: &#34;00:00:17&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_63_goz_lens.webm-beklenen_kelimeler62]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:17&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 51868 byte\nSTT sonucu: Kontakt lens mayenisi i\u00e7in g\u00f6z hastal\u0131klar\u0131 b\u00f6l\u00fcm\u00fcnden randevu al.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_64_cildiye_egzama.webm-beklenen_kelimeler63]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_64_cildiye_egzama.webm-beklenen_kelimeler63]&#34;, &#34;duration&#34;: &#34;00:00:18&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_64_cildiye_egzama.webm-beklenen_kelimeler63]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:18&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 57657 byte\nSTT sonucu: Egzamam tekrar alevlendi, dermatoloji doktorumdan hemen randevu ver.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_65_goz_yanmasi.webm-beklenen_kelimeler64]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_65_goz_yanmasi.webm-beklenen_kelimeler64]&#34;, &#34;duration&#34;: &#34;00:00:18&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_65_goz_yanmasi.webm-beklenen_kelimeler64]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:18&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 50851 byte\nSTT sonucu: G\u00f6zlerimde kuruluk ve yanma var. G\u00f6z b\u00f6l\u00fcm\u00fcne randevu bakar m\u0131s\u0131n?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_66_cildiye_kasinti.webm-beklenen_kelimeler65]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_66_cildiye_kasinti.webm-beklenen_kelimeler65]&#34;, &#34;duration&#34;: &#34;00:00:16&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_66_cildiye_kasinti.webm-beklenen_kelimeler65]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:16&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 36056 byte\nSTT sonucu: \u00c7ok ka\u015f\u0131n\u0131yorum, cildiye randevusu bul bana.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_67_goz_kanlanma.webm-beklenen_kelimeler66]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_67_goz_kanlanma.webm-beklenen_kelimeler66]&#34;, &#34;duration&#34;: &#34;00:00:18&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_67_goz_kanlanma.webm-beklenen_kelimeler66]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:18&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 41854 byte\nSTT sonucu: G\u00f6z\u00fcm kanland\u0131, g\u00f6z doktoruna ne zaman gidebilirim?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_68_kbb_bogaz_agrisi.webm-beklenen_kelimeler67]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_68_kbb_bogaz_agrisi.webm-beklenen_kelimeler67]&#34;, &#34;duration&#34;: &#34;00:00:19&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_68_kbb_bogaz_agrisi.webm-beklenen_kelimeler67]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:19&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 54647 byte\nSTT sonucu: Bo\u011faz\u0131m \u00e7ok a\u011fr\u0131yor. Kulak burun bo\u011fazdan acil randevu bulabilir miyiz?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_69_ortopedi_diz.webm-beklenen_kelimeler68]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_69_ortopedi_diz.webm-beklenen_kelimeler68]&#34;, &#34;duration&#34;: &#34;00:00:18&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_69_ortopedi_diz.webm-beklenen_kelimeler68]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:18&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 58667 byte\nSTT sonucu: Diz kapa\u011f\u0131m a\u011fr\u0131yor, ortopedi ve travmatolojiye randevu almak istiyorum.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_70_kbb_isitme.webm-beklenen_kelimeler69]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_70_kbb_isitme.webm-beklenen_kelimeler69]&#34;, &#34;duration&#34;: &#34;00:00:19&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_70_kbb_isitme.webm-beklenen_kelimeler69]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:19&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 49208 byte\nSTT sonucu: \u0130\u015fitme kayb\u0131 ya\u015f\u0131yorum. Kulak burun bo\u011faza randevu bakar m\u0131s\u0131n?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_71_ortopedi_alci.webm-beklenen_kelimeler70]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_71_ortopedi_alci.webm-beklenen_kelimeler70]&#34;, &#34;duration&#34;: &#34;00:00:18&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_71_ortopedi_alci.webm-beklenen_kelimeler70]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:18&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 55966 byte\nSTT sonucu: Al\u00e7\u0131m\u0131 \u00e7\u0131kartt\u0131rmak i\u00e7in ortopedi b\u00f6l\u00fcm\u00fcnden randevu almam gerekiyor.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_72_kbb_sinuzit.webm-beklenen_kelimeler71]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_72_kbb_sinuzit.webm-beklenen_kelimeler71]&#34;, &#34;duration&#34;: &#34;00:00:18&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_72_kbb_sinuzit.webm-beklenen_kelimeler71]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:18&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 52066 byte\nSTT sonucu: Sin\u00fczitim azd\u0131, kulak burun bo\u011faz b\u00f6l\u00fcm\u00fcnden yar\u0131na yer bulunur mu?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_73_ortopedi_bel_agrisi.webm-beklenen_kelimeler72]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_73_ortopedi_bel_agrisi.webm-beklenen_kelimeler72]&#34;, &#34;duration&#34;: &#34;00:00:18&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_73_ortopedi_bel_agrisi.webm-beklenen_kelimeler72]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:18&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 57701 byte\nSTT sonucu: Bel f\u0131t\u0131\u011f\u0131m i\u00e7in ortopedi ve travmatoloji b\u00f6l\u00fcm\u00fcne randevu rica ediyorum.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_74_kbb_kulak_cinlamasi.webm-beklenen_kelimeler73]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_74_kbb_kulak_cinlamasi.webm-beklenen_kelimeler73]&#34;, &#34;duration&#34;: &#34;00:00:18&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_74_kbb_kulak_cinlamasi.webm-beklenen_kelimeler73]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:18&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 59185 byte\nSTT sonucu: Ge\u00e7meyen kulak \u00e7\u0131nlamam var. KBB b\u00f6l\u00fcm\u00fcne randevu rica ediyorum.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_75_ortopedi_kirik.webm-beklenen_kelimeler74]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_75_ortopedi_kirik.webm-beklenen_kelimeler74]&#34;, &#34;duration&#34;: &#34;00:00:18&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_75_ortopedi_kirik.webm-beklenen_kelimeler74]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:18&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 57107 byte\nSTT sonucu: K\u0131r\u0131k tedavisi sonras\u0131 kontrol i\u00e7in ortopedi doktoruna randevu laz\u0131m.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_76_kbb_burun_tikanikligi.webm-beklenen_kelimeler75]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_76_kbb_burun_tikanikligi.webm-beklenen_kelimeler75]&#34;, &#34;duration&#34;: &#34;00:00:18&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_76_kbb_burun_tikanikligi.webm-beklenen_kelimeler75]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:18&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 56996 byte\nSTT sonucu: Aylard\u0131r burnum t\u0131kal\u0131, kulak burun bo\u011faz b\u00f6l\u00fcm\u00fcnden randevu rica ediyorum.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_77_ortopedi_boyun_fitigi.webm-beklenen_kelimeler76]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_77_ortopedi_boyun_fitigi.webm-beklenen_kelimeler76]&#34;, &#34;duration&#34;: &#34;00:00:18&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_77_ortopedi_boyun_fitigi.webm-beklenen_kelimeler76]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:18&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 51169 byte\nSTT sonucu: Boyun f\u0131t\u0131\u011f\u0131m i\u00e7in ortopedi b\u00f6l\u00fcm\u00fcne gitmem laz\u0131m. Yer var m\u0131?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_78_kbb_ses_kisikligi.webm-beklenen_kelimeler77]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_78_kbb_ses_kisikligi.webm-beklenen_kelimeler77]&#34;, &#34;duration&#34;: &#34;00:00:19&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_78_kbb_ses_kisikligi.webm-beklenen_kelimeler77]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:19&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 55679 byte\nSTT sonucu: Sesim k\u0131s\u0131ld\u0131 \u00e7\u0131km\u0131yor. Kulak burun bo\u011faz b\u00f6l\u00fcm\u00fcne bir randevu ayarla.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_79_ortopedi_topuk.webm-beklenen_kelimeler78]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_79_ortopedi_topuk.webm-beklenen_kelimeler78]&#34;, &#34;duration&#34;: &#34;00:00:18&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_79_ortopedi_topuk.webm-beklenen_kelimeler78]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:18&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 49494 byte\nSTT sonucu: Topuk dikenim var. Ortopedi doktoru i\u00e7in yer bakar m\u0131s\u0131n?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_80_noroloji_bas_agrisi.webm-beklenen_kelimeler79]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_80_noroloji_bas_agrisi.webm-beklenen_kelimeler79]&#34;, &#34;duration&#34;: &#34;00:00:20&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_80_noroloji_bas_agrisi.webm-beklenen_kelimeler79]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:20&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 56009 byte\nSTT sonucu: S\u00fcrekli ba\u015f a\u011fr\u0131m var. N\u00f6roloji b\u00f6l\u00fcm\u00fcnden bir doktora g\u00f6r\u00fcnmem gerek.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_81_noroloji_uyusma.webm-beklenen_kelimeler80]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_81_noroloji_uyusma.webm-beklenen_kelimeler80]&#34;, &#34;duration&#34;: &#34;00:00:18&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_81_noroloji_uyusma.webm-beklenen_kelimeler80]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:18&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 59252 byte\nSTT sonucu: Kollar\u0131mda uyu\u015fma var. N\u00f6roloji doktoruna en erken ne zaman gidebilirim?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_82_noroloji_epilepsi.webm-beklenen_kelimeler81]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_82_noroloji_epilepsi.webm-beklenen_kelimeler81]&#34;, &#34;duration&#34;: &#34;00:00:18&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_82_noroloji_epilepsi.webm-beklenen_kelimeler81]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:18&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 58096 byte\nSTT sonucu: Epilepsi kontrol\u00fcm i\u00e7in n\u00f6roloji b\u00f6l\u00fcm\u00fcnden \u00f6n\u00fcm\u00fczdeki aya randevu bak.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_83_noroloji_titreme.webm-beklenen_kelimeler82]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_83_noroloji_titreme.webm-beklenen_kelimeler82]&#34;, &#34;duration&#34;: &#34;00:00:17&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_83_noroloji_titreme.webm-beklenen_kelimeler82]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:17&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 56691 byte\nSTT sonucu: Ellerimde titreme ba\u015flad\u0131. N\u00f6roloji b\u00f6l\u00fcm\u00fcnden en erken randevuyu al.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_84_noroloji_alzheimer.webm-beklenen_kelimeler83]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_84_noroloji_alzheimer.webm-beklenen_kelimeler83]&#34;, &#34;duration&#34;: &#34;00:00:16&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_84_noroloji_alzheimer.webm-beklenen_kelimeler83]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:16&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;dosya_adi = &amp;#x27;test_84_noroloji_alzheimer.webm&amp;#x27;, beklenen_kelimeler = [&amp;#x27;alzheimer&amp;#x27;, &amp;#x27;n\u00f6roloji&amp;#x27;, &amp;#x27;yirmisine&amp;#x27;]\n\n    @pytest.mark.parametrize(&amp;quot;dosya_adi, beklenen_kelimeler&amp;quot;, STT_TEST_VERILERI)\n    def test_stt_senaryolari(dosya_adi, beklenen_kelimeler):\n        &amp;quot;&amp;quot;&amp;quot;\n        [TEZ KAPSAMI] Sesli asistan\u0131n 10 farkl\u0131 MHRS kullan\u0131m senaryosunda\n        .webm dosyalar\u0131n\u0131 do\u011fru analiz edip metne d\u00f6kebildi\u011fini test eder.\n        &amp;quot;&amp;quot;&amp;quot;\n        dosya_yolu = os.path.join(&amp;quot;tests/test_data&amp;quot;, dosya_adi)\n    \n        # 1. A\u015fama: Test dosyas\u0131n\u0131n \u00fcretilmi\u015f ve var oldu\u011fundan emin ol\n        # (\u00d6nceki Python scripti ile test_data klas\u00f6r\u00fcne dosyalar\u0131 \u00fcretmi\u015f olman gerekir)\n        # \u015eimdilik sim\u00fclasyonun \u00e7al\u0131\u015fmas\u0131 i\u00e7in bu kontrol\u00fc pasife al\u0131yorum:\n        assert os.path.exists(dosya_yolu), f&amp;quot;HATA: Ses dosyas\u0131 bulunamad\u0131 -&amp;gt; {dosya_yolu}&amp;quot;\n    \n        # 2. A\u015fama: Sesi Metne \u00c7evir (ACT)\n        # GER\u00c7EK PROJEDE \u015e\u00d6YLE OLACAK: gercek_metin = sesi_metne_cevir(dosya_yolu)\n        gercek_metin = sesi_metne_cevir(dosya_yolu)\n    \n        gercek_metin_kucuk = gercek_metin.replace(&amp;quot;\u0130&amp;quot;, &amp;quot;i&amp;quot;).replace(&amp;quot;I&amp;quot;, &amp;quot;\u0131&amp;quot;).lower()\n    \n        # 3. A\u015fama: Do\u011frulama (ASSERT)\n        assert len(gercek_metin_kucuk) &amp;gt; 0, &amp;quot;Sesi metne \u00e7evirme ba\u015far\u0131s\u0131z (bo\u015f sonu\u00e7).&amp;quot;\n    \n        for kelime in beklenen_kelimeler:\n&amp;gt;           assert kelime in gercek_metin_kucuk, (\n                f&amp;quot;BA\u015eARISIZ: &amp;#x27;{kelime}&amp;#x27; kelimesi &amp;#x27;{dosya_adi}&amp;#x27; \u00e7\u00f6z\u00fcmlemesinde bulunamad\u0131! &amp;quot;\n                f&amp;quot;Whisper \u00c7\u0131kt\u0131s\u0131: &amp;#x27;{gercek_metin}&amp;#x27;&amp;quot;\n            )\nE           AssertionError: BA\u015eARISIZ: &amp;#x27;yirmisine&amp;#x27; kelimesi &amp;#x27;test_84_noroloji_alzheimer.webm&amp;#x27; \u00e7\u00f6z\u00fcmlemesinde bulunamad\u0131! Whisper \u00c7\u0131kt\u0131s\u0131: &amp;#x27;Alzheimer kontrol\u00fc i\u00e7in n\u00f6roloji b\u00f6l\u00fcm\u00fcne ay\u0131n 20&amp;#x27;sine randevu al.&amp;#x27;\nE           assert &amp;#x27;yirmisine&amp;#x27; in &amp;quot;alzheimer kontrol\u00fc i\u00e7in n\u00f6roloji b\u00f6l\u00fcm\u00fcne ay\u0131n 20&amp;#x27;sine randevu al.&amp;quot;\n\ntests\\test_core.py:162: AssertionError\n\n----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 51954 byte\nSTT sonucu: Alzheimer kontrol\u00fc i\u00e7in n\u00f6roloji b\u00f6l\u00fcm\u00fcne ay\u0131n 20&amp;#x27;sine randevu al.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_85_noroloji_unutkanlik.webm-beklenen_kelimeler84]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_85_noroloji_unutkanlik.webm-beklenen_kelimeler84]&#34;, &#34;duration&#34;: &#34;00:00:16&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_85_noroloji_unutkanlik.webm-beklenen_kelimeler84]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:16&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 51912 byte\nSTT sonucu: Son zamanlarda \u00e7ok unutkan\u0131m, n\u00f6rolojiye muayene olmak istiyorum.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_86_randevu_sorgula_tarih.webm-beklenen_kelimeler85]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_86_randevu_sorgula_tarih.webm-beklenen_kelimeler85]&#34;, &#34;duration&#34;: &#34;00:00:16&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_86_randevu_sorgula_tarih.webm-beklenen_kelimeler85]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:16&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;dosya_adi = &amp;#x27;test_86_randevu_sorgula_tarih.webm&amp;#x27;, beklenen_kelimeler = [&amp;#x27;on be\u015findeki&amp;#x27;, &amp;#x27;saatini&amp;#x27;, &amp;#x27;\u00f6\u011frenebilir&amp;#x27;]\n\n    @pytest.mark.parametrize(&amp;quot;dosya_adi, beklenen_kelimeler&amp;quot;, STT_TEST_VERILERI)\n    def test_stt_senaryolari(dosya_adi, beklenen_kelimeler):\n        &amp;quot;&amp;quot;&amp;quot;\n        [TEZ KAPSAMI] Sesli asistan\u0131n 10 farkl\u0131 MHRS kullan\u0131m senaryosunda\n        .webm dosyalar\u0131n\u0131 do\u011fru analiz edip metne d\u00f6kebildi\u011fini test eder.\n        &amp;quot;&amp;quot;&amp;quot;\n        dosya_yolu = os.path.join(&amp;quot;tests/test_data&amp;quot;, dosya_adi)\n    \n        # 1. A\u015fama: Test dosyas\u0131n\u0131n \u00fcretilmi\u015f ve var oldu\u011fundan emin ol\n        # (\u00d6nceki Python scripti ile test_data klas\u00f6r\u00fcne dosyalar\u0131 \u00fcretmi\u015f olman gerekir)\n        # \u015eimdilik sim\u00fclasyonun \u00e7al\u0131\u015fmas\u0131 i\u00e7in bu kontrol\u00fc pasife al\u0131yorum:\n        assert os.path.exists(dosya_yolu), f&amp;quot;HATA: Ses dosyas\u0131 bulunamad\u0131 -&amp;gt; {dosya_yolu}&amp;quot;\n    \n        # 2. A\u015fama: Sesi Metne \u00c7evir (ACT)\n        # GER\u00c7EK PROJEDE \u015e\u00d6YLE OLACAK: gercek_metin = sesi_metne_cevir(dosya_yolu)\n        gercek_metin = sesi_metne_cevir(dosya_yolu)\n    \n        gercek_metin_kucuk = gercek_metin.replace(&amp;quot;\u0130&amp;quot;, &amp;quot;i&amp;quot;).replace(&amp;quot;I&amp;quot;, &amp;quot;\u0131&amp;quot;).lower()\n    \n        # 3. A\u015fama: Do\u011frulama (ASSERT)\n        assert len(gercek_metin_kucuk) &amp;gt; 0, &amp;quot;Sesi metne \u00e7evirme ba\u015far\u0131s\u0131z (bo\u015f sonu\u00e7).&amp;quot;\n    \n        for kelime in beklenen_kelimeler:\n&amp;gt;           assert kelime in gercek_metin_kucuk, (\n                f&amp;quot;BA\u015eARISIZ: &amp;#x27;{kelime}&amp;#x27; kelimesi &amp;#x27;{dosya_adi}&amp;#x27; \u00e7\u00f6z\u00fcmlemesinde bulunamad\u0131! &amp;quot;\n                f&amp;quot;Whisper \u00c7\u0131kt\u0131s\u0131: &amp;#x27;{gercek_metin}&amp;#x27;&amp;quot;\n            )\nE           AssertionError: BA\u015eARISIZ: &amp;#x27;on be\u015findeki&amp;#x27; kelimesi &amp;#x27;test_86_randevu_sorgula_tarih.webm&amp;#x27; \u00e7\u00f6z\u00fcmlemesinde bulunamad\u0131! Whisper \u00c7\u0131kt\u0131s\u0131: &amp;#x27;Ay\u0131n 15&amp;#x27;indeki randevumun saatini \u00f6\u011frenebilir miyim?&amp;#x27;\nE           assert &amp;#x27;on be\u015findeki&amp;#x27; in &amp;quot;ay\u0131n 15&amp;#x27;indeki randevumun saatini \u00f6\u011frenebilir miyim?&amp;quot;\n\ntests\\test_core.py:162: AssertionError\n\n----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 43367 byte\nSTT sonucu: Ay\u0131n 15&amp;#x27;indeki randevumun saatini \u00f6\u011frenebilir miyim?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_87_randevu_iptal_gerekce.webm-beklenen_kelimeler86]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_87_randevu_iptal_gerekce.webm-beklenen_kelimeler86]&#34;, &#34;duration&#34;: &#34;00:00:16&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_87_randevu_iptal_gerekce.webm-beklenen_kelimeler86]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:16&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 45056 byte\nSTT sonucu: \u015eehir d\u0131\u015f\u0131na \u00e7\u0131kaca\u011f\u0131m i\u00e7in yar\u0131nki randevumu iptal edin.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_88_randevu_tarih_degistir.webm-beklenen_kelimeler87]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_88_randevu_tarih_degistir.webm-beklenen_kelimeler87]&#34;, &#34;duration&#34;: &#34;00:00:17&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_88_randevu_tarih_degistir.webm-beklenen_kelimeler87]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:17&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 53994 byte\nSTT sonucu: Mevcut randevumun tarihini haftaya pazartesi olarak de\u011fi\u015ftirebilir miyiz?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_89_iptal_yanlis_bolum.webm-beklenen_kelimeler88]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_89_iptal_yanlis_bolum.webm-beklenen_kelimeler88]&#34;, &#34;duration&#34;: &#34;00:00:17&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_89_iptal_yanlis_bolum.webm-beklenen_kelimeler88]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:17&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 50996 byte\nSTT sonucu: Yanl\u0131\u015f b\u00f6l\u00fcmden alm\u0131\u015f\u0131m, o randevuyu tamamen iptal eder misin?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_90_sorgula_doktor_isim.webm-beklenen_kelimeler89]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_90_sorgula_doktor_isim.webm-beklenen_kelimeler89]&#34;, &#34;duration&#34;: &#34;00:00:15&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_90_sorgula_doktor_isim.webm-beklenen_kelimeler89]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:15&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 42709 byte\nSTT sonucu: Randevu ald\u0131\u011f\u0131m doktorun ismini tekrar s\u00f6yler misin?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_91_sorgula_hangi_hastane.webm-beklenen_kelimeler90]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_91_sorgula_hangi_hastane.webm-beklenen_kelimeler90]&#34;, &#34;duration&#34;: &#34;00:00:15&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_91_sorgula_hangi_hastane.webm-beklenen_kelimeler90]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:15&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 36791 byte\nSTT sonucu: Benim randevum tam olarak hangi hastanedeydi?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_92_iptal_is_cikisi.webm-beklenen_kelimeler91]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_92_iptal_is_cikisi.webm-beklenen_kelimeler91]&#34;, &#34;duration&#34;: &#34;00:00:17&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_92_iptal_is_cikisi.webm-beklenen_kelimeler91]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:17&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 54231 byte\nSTT sonucu: \u0130\u015fim \u00e7\u0131kt\u0131\u011f\u0131 i\u00e7in \u00f6\u011fleden sonraki randevumu iptal etmek zorunday\u0131m.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_93_iptal_gittim.webm-beklenen_kelimeler92]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_93_iptal_gittim.webm-beklenen_kelimeler92]&#34;, &#34;duration&#34;: &#34;00:00:17&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_93_iptal_gittim.webm-beklenen_kelimeler92]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:17&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 56124 byte\nSTT sonucu: Ben zaten hastaneye gittim. O randevuyu sistemden iptal edebilir misin?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_94_sorgula_saat_kacti.webm-beklenen_kelimeler93]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_94_sorgula_saat_kacti.webm-beklenen_kelimeler93]&#34;, &#34;duration&#34;: &#34;00:00:17&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_94_sorgula_saat_kacti.webm-beklenen_kelimeler93]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:17&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 48152 byte\nSTT sonucu: Bug\u00fcn bir randevum olacakt\u0131 ama saati tam olarak ka\u00e7tayd\u0131?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_95_iptal_hepsini.webm-beklenen_kelimeler94]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_95_iptal_hepsini.webm-beklenen_kelimeler94]&#34;, &#34;duration&#34;: &#34;00:00:16&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_95_iptal_hepsini.webm-beklenen_kelimeler94]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:16&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 53620 byte\nSTT sonucu: Sistemdeki ileri tarihle t\u00fcm randevular\u0131m\u0131 iptal etmek istiyorum.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_96_sorgula_tarih_dogrumu.webm-beklenen_kelimeler95]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_96_sorgula_tarih_dogrumu.webm-beklenen_kelimeler95]&#34;, &#34;duration&#34;: &#34;00:00:16&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_96_sorgula_tarih_dogrumu.webm-beklenen_kelimeler95]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:16&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;dosya_adi = &amp;#x27;test_96_sorgula_tarih_dogrumu.webm&amp;#x27;, beklenen_kelimeler = [&amp;#x27;dokuz bu\u00e7ukta&amp;#x27;, &amp;#x27;dahiliye&amp;#x27;, &amp;#x27;do\u011fru mu&amp;#x27;]\n\n    @pytest.mark.parametrize(&amp;quot;dosya_adi, beklenen_kelimeler&amp;quot;, STT_TEST_VERILERI)\n    def test_stt_senaryolari(dosya_adi, beklenen_kelimeler):\n        &amp;quot;&amp;quot;&amp;quot;\n        [TEZ KAPSAMI] Sesli asistan\u0131n 10 farkl\u0131 MHRS kullan\u0131m senaryosunda\n        .webm dosyalar\u0131n\u0131 do\u011fru analiz edip metne d\u00f6kebildi\u011fini test eder.\n        &amp;quot;&amp;quot;&amp;quot;\n        dosya_yolu = os.path.join(&amp;quot;tests/test_data&amp;quot;, dosya_adi)\n    \n        # 1. A\u015fama: Test dosyas\u0131n\u0131n \u00fcretilmi\u015f ve var oldu\u011fundan emin ol\n        # (\u00d6nceki Python scripti ile test_data klas\u00f6r\u00fcne dosyalar\u0131 \u00fcretmi\u015f olman gerekir)\n        # \u015eimdilik sim\u00fclasyonun \u00e7al\u0131\u015fmas\u0131 i\u00e7in bu kontrol\u00fc pasife al\u0131yorum:\n        assert os.path.exists(dosya_yolu), f&amp;quot;HATA: Ses dosyas\u0131 bulunamad\u0131 -&amp;gt; {dosya_yolu}&amp;quot;\n    \n        # 2. A\u015fama: Sesi Metne \u00c7evir (ACT)\n        # GER\u00c7EK PROJEDE \u015e\u00d6YLE OLACAK: gercek_metin = sesi_metne_cevir(dosya_yolu)\n        gercek_metin = sesi_metne_cevir(dosya_yolu)\n    \n        gercek_metin_kucuk = gercek_metin.replace(&amp;quot;\u0130&amp;quot;, &amp;quot;i&amp;quot;).replace(&amp;quot;I&amp;quot;, &amp;quot;\u0131&amp;quot;).lower()\n    \n        # 3. A\u015fama: Do\u011frulama (ASSERT)\n        assert len(gercek_metin_kucuk) &amp;gt; 0, &amp;quot;Sesi metne \u00e7evirme ba\u015far\u0131s\u0131z (bo\u015f sonu\u00e7).&amp;quot;\n    \n        for kelime in beklenen_kelimeler:\n&amp;gt;           assert kelime in gercek_metin_kucuk, (\n                f&amp;quot;BA\u015eARISIZ: &amp;#x27;{kelime}&amp;#x27; kelimesi &amp;#x27;{dosya_adi}&amp;#x27; \u00e7\u00f6z\u00fcmlemesinde bulunamad\u0131! &amp;quot;\n                f&amp;quot;Whisper \u00c7\u0131kt\u0131s\u0131: &amp;#x27;{gercek_metin}&amp;#x27;&amp;quot;\n            )\nE           AssertionError: BA\u015eARISIZ: &amp;#x27;dokuz bu\u00e7ukta&amp;#x27; kelimesi &amp;#x27;test_96_sorgula_tarih_dogrumu.webm&amp;#x27; \u00e7\u00f6z\u00fcmlemesinde bulunamad\u0131! Whisper \u00c7\u0131kt\u0131s\u0131: &amp;#x27;Yar\u0131n sabah 9.30&amp;#x27;da dahiliye randevum var, do\u011fru mu?&amp;#x27;\nE           assert &amp;#x27;dokuz bu\u00e7ukta&amp;#x27; in &amp;quot;yar\u0131n sabah 9.30&amp;#x27;da dahiliye randevum var, do\u011fru mu?&amp;quot;\n\ntests\\test_core.py:162: AssertionError\n\n----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 45194 byte\nSTT sonucu: Yar\u0131n sabah 9.30&amp;#x27;da dahiliye randevum var, do\u011fru mu?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_97_coklu_dahiliye_goz.webm-beklenen_kelimeler96]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_97_coklu_dahiliye_goz.webm-beklenen_kelimeler96]&#34;, &#34;duration&#34;: &#34;00:00:17&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_97_coklu_dahiliye_goz.webm-beklenen_kelimeler96]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:17&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 54411 byte\nSTT sonucu: Hem dahiliyeden hem de g\u00f6z hastal\u0131klar\u0131ndan ayn\u0131 g\u00fcne randevu alabilir miyiz?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_98_baska_sehir.webm-beklenen_kelimeler97]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_98_baska_sehir.webm-beklenen_kelimeler97]&#34;, &#34;duration&#34;: &#34;00:00:17&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_98_baska_sehir.webm-beklenen_kelimeler97]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:17&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 55965 byte\nSTT sonucu: Ankara&amp;#x27;daki bir hastanenin ortopedi b\u00f6l\u00fcm\u00fcnden randevu ayarlayabilir misin?\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_99_doktor_secimi.webm-beklenen_kelimeler98]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_99_doktor_secimi.webm-beklenen_kelimeler98]&#34;, &#34;duration&#34;: &#34;00:00:17&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_99_doktor_secimi.webm-beklenen_kelimeler98]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:17&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 53236 byte\nSTT sonucu: Dahiliye b\u00f6l\u00fcm\u00fcnden sadece kad\u0131n bir doktora randevu almak istiyorum.\n&#34;}], &#34;tests/test_core.py::test_stt_senaryolari[test_100_hizli_kardiyoloji.webm-beklenen_kelimeler99]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_core.py::test_stt_senaryolari[test_100_hizli_kardiyoloji.webm-beklenen_kelimeler99]&#34;, &#34;duration&#34;: &#34;00:00:14&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_core.py::test_stt_senaryolari[test_100_hizli_kardiyoloji.webm-beklenen_kelimeler99]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:14&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nSes dosyasi boyutu: 35678 byte\nSTT sonucu: En acilinden kardiyoloji randevusu ver.\n&#34;}]}, &#34;renderCollapsed&#34;: [&#34;passed&#34;], &#34;initialSort&#34;: &#34;result&#34;, &#34;title&#34;: &#34;tez_test_raporu.html&#34;}"></div>
+    <script>
+      (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+const { getCollapsedCategory, setCollapsedIds } = require('./storage.js')
+
+class DataManager {
+    setManager(data) {
+        const collapsedCategories = [...getCollapsedCategory(data.renderCollapsed)]
+        const collapsedIds = []
+        const tests = Object.values(data.tests).flat().map((test, index) => {
+            const collapsed = collapsedCategories.includes(test.result.toLowerCase())
+            const id = `test_${index}`
+            if (collapsed) {
+                collapsedIds.push(id)
+            }
+            return {
+                ...test,
+                id,
+                collapsed,
+            }
+        })
+        const dataBlob = { ...data, tests }
+        this.data = { ...dataBlob }
+        this.renderData = { ...dataBlob }
+        setCollapsedIds(collapsedIds)
+    }
+
+    get allData() {
+        return { ...this.data }
+    }
+
+    resetRender() {
+        this.renderData = { ...this.data }
+    }
+
+    setRender(data) {
+        this.renderData.tests = [...data]
+    }
+
+    toggleCollapsedItem(id) {
+        this.renderData.tests = this.renderData.tests.map((test) =>
+            test.id === id ? { ...test, collapsed: !test.collapsed } : test,
+        )
+    }
+
+    set allCollapsed(collapsed) {
+        this.renderData = { ...this.renderData, tests: [...this.renderData.tests.map((test) => (
+            { ...test, collapsed }
+        ))] }
+    }
+
+    get testSubset() {
+        return [...this.renderData.tests]
+    }
+
+    get environment() {
+        return this.renderData.environment
+    }
+
+    get initialSort() {
+        return this.data.initialSort
+    }
+}
+
+module.exports = {
+    manager: new DataManager(),
+}
+
+},{"./storage.js":8}],2:[function(require,module,exports){
+const mediaViewer = require('./mediaviewer.js')
+const templateEnvRow = document.getElementById('template_environment_row')
+const templateResult = document.getElementById('template_results-table__tbody')
+
+function htmlToElements(html) {
+    const temp = document.createElement('template')
+    temp.innerHTML = html
+    return temp.content.childNodes
+}
+
+const find = (selector, elem) => {
+    if (!elem) {
+        elem = document
+    }
+    return elem.querySelector(selector)
+}
+
+const findAll = (selector, elem) => {
+    if (!elem) {
+        elem = document
+    }
+    return [...elem.querySelectorAll(selector)]
+}
+
+const dom = {
+    getStaticRow: (key, value) => {
+        const envRow = templateEnvRow.content.cloneNode(true)
+        const isObj = typeof value === 'object' && value !== null
+        const values = isObj ? Object.keys(value).map((k) => `${k}: ${value[k]}`) : null
+
+        const valuesElement = htmlToElements(
+            values ? `<ul>${values.map((val) => `<li>${val}</li>`).join('')}<ul>` : `<div>${value}</div>`)[0]
+        const td = findAll('td', envRow)
+        td[0].textContent = key
+        td[1].appendChild(valuesElement)
+
+        return envRow
+    },
+    getResultTBody: ({ testId, id, log, extras, resultsTableRow, tableHtml, result, collapsed }) => {
+        const resultBody = templateResult.content.cloneNode(true)
+        resultBody.querySelector('tbody').classList.add(result.toLowerCase())
+        resultBody.querySelector('tbody').id = testId
+        resultBody.querySelector('.collapsible').dataset.id = id
+
+        resultsTableRow.forEach((html) => {
+            const t = document.createElement('template')
+            t.innerHTML = html
+            resultBody.querySelector('.collapsible').appendChild(t.content)
+        })
+
+        if (log) {
+            // Wrap lines starting with "E" with span.error to color those lines red
+            const wrappedLog = log.replace(/^E.*$/gm, (match) => `<span class="error">${match}</span>`)
+            resultBody.querySelector('.log').innerHTML = wrappedLog
+        } else {
+            resultBody.querySelector('.log').remove()
+        }
+
+        if (collapsed) {
+            resultBody.querySelector('.collapsible > .col-result')?.classList.add('collapsed')
+            resultBody.querySelector('.extras-row').classList.add('hidden')
+        } else {
+            resultBody.querySelector('.collapsible > .col-result')?.classList.remove('collapsed')
+        }
+
+        const media = []
+        extras?.forEach(({ name, format_type, content }) => {
+            if (['image', 'video'].includes(format_type)) {
+                media.push({ path: content, name, format_type })
+            }
+
+            if (format_type === 'html') {
+                resultBody.querySelector('.extraHTML').insertAdjacentHTML('beforeend', `<div>${content}</div>`)
+            }
+        })
+        mediaViewer.setup(resultBody, media)
+
+        // Add custom html from the pytest_html_results_table_html hook
+        tableHtml?.forEach((item) => {
+            resultBody.querySelector('td[class="extra"]').insertAdjacentHTML('beforeend', item)
+        })
+
+        return resultBody
+    },
+}
+
+module.exports = {
+    dom,
+    htmlToElements,
+    find,
+    findAll,
+}
+
+},{"./mediaviewer.js":6}],3:[function(require,module,exports){
+const { manager } = require('./datamanager.js')
+const { doSort } = require('./sort.js')
+const storageModule = require('./storage.js')
+
+const getFilteredSubSet = (filter) =>
+    manager.allData.tests.filter(({ result }) => filter.includes(result.toLowerCase()))
+
+const doInitFilter = () => {
+    const currentFilter = storageModule.getVisible()
+    const filteredSubset = getFilteredSubSet(currentFilter)
+    manager.setRender(filteredSubset)
+}
+
+const doFilter = (type, show) => {
+    if (show) {
+        storageModule.showCategory(type)
+    } else {
+        storageModule.hideCategory(type)
+    }
+
+    const currentFilter = storageModule.getVisible()
+    const filteredSubset = getFilteredSubSet(currentFilter)
+    manager.setRender(filteredSubset)
+
+    const sortColumn = storageModule.getSort()
+    doSort(sortColumn, true)
+}
+
+module.exports = {
+    doFilter,
+    doInitFilter,
+}
+
+},{"./datamanager.js":1,"./sort.js":7,"./storage.js":8}],4:[function(require,module,exports){
+const { redraw, bindEvents, renderStatic } = require('./main.js')
+const { doInitFilter } = require('./filter.js')
+const { doInitSort } = require('./sort.js')
+const { manager } = require('./datamanager.js')
+const data = JSON.parse(document.getElementById('data-container').dataset.jsonblob)
+
+function init() {
+    manager.setManager(data)
+    doInitFilter()
+    doInitSort()
+    renderStatic()
+    redraw()
+    bindEvents()
+}
+
+init()
+
+},{"./datamanager.js":1,"./filter.js":3,"./main.js":5,"./sort.js":7}],5:[function(require,module,exports){
+const { dom, find, findAll } = require('./dom.js')
+const { manager } = require('./datamanager.js')
+const { doSort } = require('./sort.js')
+const { doFilter } = require('./filter.js')
+const {
+    getVisible,
+    getCollapsedIds,
+    setCollapsedIds,
+    getSort,
+    getSortDirection,
+    possibleFilters,
+} = require('./storage.js')
+
+const removeChildren = (node) => {
+    while (node.firstChild) {
+        node.removeChild(node.firstChild)
+    }
+}
+
+const renderStatic = () => {
+    const renderEnvironmentTable = () => {
+        const environment = manager.environment
+        const rows = Object.keys(environment).map((key) => dom.getStaticRow(key, environment[key]))
+        const table = document.getElementById('environment')
+        removeChildren(table)
+        rows.forEach((row) => table.appendChild(row))
+    }
+    renderEnvironmentTable()
+}
+
+const addItemToggleListener = (elem) => {
+    elem.addEventListener('click', ({ target }) => {
+        const id = target.parentElement.dataset.id
+        manager.toggleCollapsedItem(id)
+
+        const collapsedIds = getCollapsedIds()
+        if (collapsedIds.includes(id)) {
+            const updated = collapsedIds.filter((item) => item !== id)
+            setCollapsedIds(updated)
+        } else {
+            collapsedIds.push(id)
+            setCollapsedIds(collapsedIds)
+        }
+        redraw()
+    })
+}
+
+const renderContent = (tests) => {
+    const sortAttr = getSort(manager.initialSort)
+    const sortAsc = JSON.parse(getSortDirection())
+    const rows = tests.map(dom.getResultTBody)
+    const table = document.getElementById('results-table')
+    const tableHeader = document.getElementById('results-table-head')
+
+    const newTable = document.createElement('table')
+    newTable.id = 'results-table'
+
+    // remove all sorting classes and set the relevant
+    findAll('.sortable', tableHeader).forEach((elem) => elem.classList.remove('asc', 'desc'))
+    tableHeader.querySelector(`.sortable[data-column-type="${sortAttr}"]`)?.classList.add(sortAsc ? 'desc' : 'asc')
+    newTable.appendChild(tableHeader)
+
+    if (!rows.length) {
+        const emptyTable = document.getElementById('template_results-table__body--empty').content.cloneNode(true)
+        newTable.appendChild(emptyTable)
+    } else {
+        rows.forEach((row) => {
+            if (!!row) {
+                findAll('.collapsible td:not(.col-links', row).forEach(addItemToggleListener)
+                find('.logexpander', row).addEventListener('click',
+                    (evt) => evt.target.parentNode.classList.toggle('expanded'),
+                )
+                newTable.appendChild(row)
+            }
+        })
+    }
+
+    table.replaceWith(newTable)
+}
+
+const renderDerived = () => {
+    const currentFilter = getVisible()
+    possibleFilters.forEach((result) => {
+        const input = document.querySelector(`input[data-test-result="${result}"]`)
+        input.checked = currentFilter.includes(result)
+    })
+}
+
+const bindEvents = () => {
+    const filterColumn = (evt) => {
+        const { target: element } = evt
+        const { testResult } = element.dataset
+
+        doFilter(testResult, element.checked)
+        const collapsedIds = getCollapsedIds()
+        const updated = manager.renderData.tests.map((test) => {
+            return {
+                ...test,
+                collapsed: collapsedIds.includes(test.id),
+            }
+        })
+        manager.setRender(updated)
+        redraw()
+    }
+
+    const header = document.getElementById('environment-header')
+    header.addEventListener('click', () => {
+        const table = document.getElementById('environment')
+        table.classList.toggle('hidden')
+        header.classList.toggle('collapsed')
+    })
+
+    findAll('input[name="filter_checkbox"]').forEach((elem) => {
+        elem.addEventListener('click', filterColumn)
+    })
+
+    findAll('.sortable').forEach((elem) => {
+        elem.addEventListener('click', (evt) => {
+            const { target: element } = evt
+            const { columnType } = element.dataset
+            doSort(columnType)
+            redraw()
+        })
+    })
+
+    document.getElementById('show_all_details').addEventListener('click', () => {
+        manager.allCollapsed = false
+        setCollapsedIds([])
+        redraw()
+    })
+    document.getElementById('hide_all_details').addEventListener('click', () => {
+        manager.allCollapsed = true
+        const allIds = manager.renderData.tests.map((test) => test.id)
+        setCollapsedIds(allIds)
+        redraw()
+    })
+}
+
+const redraw = () => {
+    const { testSubset } = manager
+
+    renderContent(testSubset)
+    renderDerived()
+}
+
+module.exports = {
+    redraw,
+    bindEvents,
+    renderStatic,
+}
+
+},{"./datamanager.js":1,"./dom.js":2,"./filter.js":3,"./sort.js":7,"./storage.js":8}],6:[function(require,module,exports){
+class MediaViewer {
+    constructor(assets) {
+        this.assets = assets
+        this.index = 0
+    }
+
+    nextActive() {
+        this.index = this.index === this.assets.length - 1 ? 0 : this.index + 1
+        return [this.activeFile, this.index]
+    }
+
+    prevActive() {
+        this.index = this.index === 0 ? this.assets.length - 1 : this.index -1
+        return [this.activeFile, this.index]
+    }
+
+    get currentIndex() {
+        return this.index
+    }
+
+    get activeFile() {
+        return this.assets[this.index]
+    }
+}
+
+
+const setup = (resultBody, assets) => {
+    if (!assets.length) {
+        resultBody.querySelector('.media').classList.add('hidden')
+        return
+    }
+
+    const mediaViewer = new MediaViewer(assets)
+    const container = resultBody.querySelector('.media-container')
+    const leftArrow = resultBody.querySelector('.media-container__nav--left')
+    const rightArrow = resultBody.querySelector('.media-container__nav--right')
+    const mediaName = resultBody.querySelector('.media__name')
+    const counter = resultBody.querySelector('.media__counter')
+    const imageEl = resultBody.querySelector('img')
+    const sourceEl = resultBody.querySelector('source')
+    const videoEl = resultBody.querySelector('video')
+
+    const setImg = (media, index) => {
+        if (media?.format_type === 'image') {
+            imageEl.src = media.path
+
+            imageEl.classList.remove('hidden')
+            videoEl.classList.add('hidden')
+        } else if (media?.format_type === 'video') {
+            sourceEl.src = media.path
+
+            videoEl.classList.remove('hidden')
+            imageEl.classList.add('hidden')
+        }
+
+        mediaName.innerText = media?.name
+        counter.innerText = `${index + 1} / ${assets.length}`
+    }
+    setImg(mediaViewer.activeFile, mediaViewer.currentIndex)
+
+    const moveLeft = () => {
+        const [media, index] = mediaViewer.prevActive()
+        setImg(media, index)
+    }
+    const doRight = () => {
+        const [media, index] = mediaViewer.nextActive()
+        setImg(media, index)
+    }
+    const openImg = () => {
+        window.open(mediaViewer.activeFile.path, '_blank')
+    }
+    if (assets.length === 1) {
+        container.classList.add('media-container--fullscreen')
+    } else {
+        leftArrow.addEventListener('click', moveLeft)
+        rightArrow.addEventListener('click', doRight)
+    }
+    imageEl.addEventListener('click', openImg)
+}
+
+module.exports = {
+    setup,
+}
+
+},{}],7:[function(require,module,exports){
+const { manager } = require('./datamanager.js')
+const storageModule = require('./storage.js')
+
+const genericSort = (list, key, ascending, customOrder) => {
+    let sorted
+    if (customOrder) {
+        sorted = list.sort((a, b) => {
+            const aValue = a.result.toLowerCase()
+            const bValue = b.result.toLowerCase()
+
+            const aIndex = customOrder.findIndex((item) => item.toLowerCase() === aValue)
+            const bIndex = customOrder.findIndex((item) => item.toLowerCase() === bValue)
+
+            // Compare the indices to determine the sort order
+            return aIndex - bIndex
+        })
+    } else {
+        sorted = list.sort((a, b) => a[key] === b[key] ? 0 : a[key] > b[key] ? 1 : -1)
+    }
+
+    if (ascending) {
+        sorted.reverse()
+    }
+    return sorted
+}
+
+const durationSort = (list, ascending) => {
+    const parseDuration = (duration) => {
+        if (duration.includes(':')) {
+            // If it's in the format "HH:mm:ss"
+            const [hours, minutes, seconds] = duration.split(':').map(Number)
+            return (hours * 3600 + minutes * 60 + seconds) * 1000
+        } else {
+            // If it's in the format "nnn ms"
+            return parseInt(duration)
+        }
+    }
+    const sorted = list.sort((a, b) => parseDuration(a['duration']) - parseDuration(b['duration']))
+    if (ascending) {
+        sorted.reverse()
+    }
+    return sorted
+}
+
+const doInitSort = () => {
+    const type = storageModule.getSort(manager.initialSort)
+    const ascending = storageModule.getSortDirection()
+    const list = manager.testSubset
+    const initialOrder = ['Error', 'Failed', 'Rerun', 'XFailed', 'XPassed', 'Skipped', 'Passed']
+
+    storageModule.setSort(type)
+    storageModule.setSortDirection(ascending)
+
+    if (type?.toLowerCase() === 'original') {
+        manager.setRender(list)
+    } else {
+        let sortedList
+        switch (type) {
+        case 'duration':
+            sortedList = durationSort(list, ascending)
+            break
+        case 'result':
+            sortedList = genericSort(list, type, ascending, initialOrder)
+            break
+        default:
+            sortedList = genericSort(list, type, ascending)
+            break
+        }
+        manager.setRender(sortedList)
+    }
+}
+
+const doSort = (type, skipDirection) => {
+    const newSortType = storageModule.getSort(manager.initialSort) !== type
+    const currentAsc = storageModule.getSortDirection()
+    let ascending
+    if (skipDirection) {
+        ascending = currentAsc
+    } else {
+        ascending = newSortType ? false : !currentAsc
+    }
+    storageModule.setSort(type)
+    storageModule.setSortDirection(ascending)
+
+    const list = manager.testSubset
+    const sortedList = type === 'duration' ? durationSort(list, ascending) : genericSort(list, type, ascending)
+    manager.setRender(sortedList)
+}
+
+module.exports = {
+    doInitSort,
+    doSort,
+}
+
+},{"./datamanager.js":1,"./storage.js":8}],8:[function(require,module,exports){
+const possibleFilters = [
+    'passed',
+    'skipped',
+    'failed',
+    'error',
+    'xfailed',
+    'xpassed',
+    'rerun',
+]
+
+const getVisible = () => {
+    const url = new URL(window.location.href)
+    const settings = new URLSearchParams(url.search).get('visible')
+    const lower = (item) => {
+        const lowerItem = item.toLowerCase()
+        if (possibleFilters.includes(lowerItem)) {
+            return lowerItem
+        }
+        return null
+    }
+    return settings === null ?
+        possibleFilters :
+        [...new Set(settings?.split(',').map(lower).filter((item) => item))]
+}
+
+const hideCategory = (categoryToHide) => {
+    const url = new URL(window.location.href)
+    const visibleParams = new URLSearchParams(url.search).get('visible')
+    const currentVisible = visibleParams ? visibleParams.split(',') : [...possibleFilters]
+    const settings = [...new Set(currentVisible)].filter((f) => f !== categoryToHide).join(',')
+
+    url.searchParams.set('visible', settings)
+    window.history.pushState({}, null, unescape(url.href))
+}
+
+const showCategory = (categoryToShow) => {
+    if (typeof window === 'undefined') {
+        return
+    }
+    const url = new URL(window.location.href)
+    const currentVisible = new URLSearchParams(url.search).get('visible')?.split(',').filter(Boolean) ||
+        [...possibleFilters]
+    const settings = [...new Set([categoryToShow, ...currentVisible])]
+    const noFilter = possibleFilters.length === settings.length || !settings.length
+
+    noFilter ? url.searchParams.delete('visible') : url.searchParams.set('visible', settings.join(','))
+    window.history.pushState({}, null, unescape(url.href))
+}
+
+const getSort = (initialSort) => {
+    const url = new URL(window.location.href)
+    let sort = new URLSearchParams(url.search).get('sort')
+    if (!sort) {
+        sort = initialSort || 'result'
+    }
+    return sort
+}
+
+const setSort = (type) => {
+    const url = new URL(window.location.href)
+    url.searchParams.set('sort', type)
+    window.history.pushState({}, null, unescape(url.href))
+}
+
+const getCollapsedCategory = (renderCollapsed) => {
+    let categories
+    if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href)
+        const collapsedItems = new URLSearchParams(url.search).get('collapsed')
+        switch (true) {
+        case !renderCollapsed && collapsedItems === null:
+            categories = ['passed']
+            break
+        case collapsedItems?.length === 0 || /^["']{2}$/.test(collapsedItems):
+            categories = []
+            break
+        case /^all$/.test(collapsedItems) || collapsedItems === null && /^all$/.test(renderCollapsed):
+            categories = [...possibleFilters]
+            break
+        default:
+            categories = collapsedItems?.split(',').map((item) => item.toLowerCase()) || renderCollapsed
+            break
+        }
+    } else {
+        categories = []
+    }
+    return categories
+}
+
+const getSortDirection = () => JSON.parse(sessionStorage.getItem('sortAsc')) || false
+const setSortDirection = (ascending) => sessionStorage.setItem('sortAsc', ascending)
+
+const getCollapsedIds = () => JSON.parse(sessionStorage.getItem('collapsedIds')) || []
+const setCollapsedIds = (list) => sessionStorage.setItem('collapsedIds', JSON.stringify(list))
+
+module.exports = {
+    getVisible,
+    hideCategory,
+    showCategory,
+    getCollapsedIds,
+    setCollapsedIds,
+    getSort,
+    setSort,
+    getSortDirection,
+    setSortDirection,
+    getCollapsedCategory,
+    possibleFilters,
+}
+
+},{}]},{},[4]);
+    </script>
+  </footer>
+  </body>
+</html>

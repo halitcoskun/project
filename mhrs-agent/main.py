@@ -1,5 +1,5 @@
 from fastapi import FastAPI, UploadFile, File, Form
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse
 from pydantic import BaseModel
 import uvicorn
 import shutil
@@ -169,7 +169,7 @@ def api_list_appointments(date, session_id):
                 count = len(appointments)
                 # Sadece ilk randevuyu okuyarak kısa bir bilgi veriyoruz
                 ilk_randevu = appointments[0]
-                return f"Bu arama için sistemde kayıtlı toplam {count} adet randevunuz bulunmaktadır. En yakını: {ilk_randevu.get('date')} saat {ilk_randevu.get('time')} - {ilk_randevu.get('department')} bölümü."
+                return f"Bu arama için sistemde kayıtlı toplam {count} adet randevunuz bulunmaktadır. En yakını: {ilk_randevu.get('date')} - {ilk_randevu.get('department')} bölümü."
             else:
                 return f"Bu arama için zaman dilimi için sistemde kayıtlı hiçbir randevunuz bulunmamaktadır."
         else:
@@ -182,48 +182,52 @@ def api_list_appointments(date, session_id):
 # --- 4. MERKEZİ ORKESTRATÖR (YÖNLENDİRİCİ) ---
 def agent_orkestrator(ai_decision, session_id):
     func = ai_decision.get("function")
-    params = ai_decision.get("parameters", {})
     
+    # Model bazen parametreleri "parameters" içine koymak yerine dışarıda bırakabiliyor.
+    # Bu yüzden her iki yere de bakacak güvenli bir yardımcı fonksiyon tanımlıyoruz.
+    raw_params = ai_decision.get("parameters", {})
+    
+    def get_safe_param(key):
+        # Önce "parameters" içinde ara, bulamazsan ana sözlükte ara, o da yoksa boş dön.
+        return raw_params.get(key) or ai_decision.get(key) or ""
+
     # --- YAPAY ZEKA HALÜSİNASYON DÜZELTİCİ (ALIAS) ---
-    if func == "create_appointment" or func == "make_appointment":
+    if func in ["create_appointment", "make_appointment"]:
         func = "book_appointment"
     elif func == "check_appointment":
         func = "check_availability"
-    # ------------------------------------------------
 
-    # 1. Bilgi eksikse veya onay bekleniyorsa (Modele ait dogrudan mesaj)
+    # 1. Bilgi eksikse veya onay bekleniyorsa
     if func == "ask_user":
-        return params.get("message", "Size nasıl yardımcı olabilirim?")
+        return get_safe_param("message") or "Size nasıl yardımcı olabilirim?"
         
-    # 2. Uygunluk kontrolü (Randevu olusturayim mi sorusuyla biter)
+    # 2. Uygunluk kontrolü
     elif func == "check_availability":
-        dept = params.get("department","")
-        date = params.get("date","")
-        timePreference = params.get("time_preference","")
+        dept = get_safe_param("department")
+        date = get_safe_param("date")
+        timePreference = get_safe_param("time_preference")
         return api_check_availability(dept, date, timePreference, session_id)
         
     # 3. Kesin kayit islemi
     elif func == "book_appointment":
-        dept = params.get("department","")
-        date = params.get("date","")
-        timePreference = params.get("time_preference","")
+        dept = get_safe_param("department")
+        date = get_safe_param("date")
+        timePreference = get_safe_param("time_preference")
         return api_book_appointment(dept, date, timePreference, session_id)
         
     # 4. Iptal islemi
     elif func == "cancel_appointment":
-        dept = params.get("department","")
-        date = params.get("date","")
+        dept = get_safe_param("department")
+        date = get_safe_param("date")
         return api_cancel_appointment(dept, date, session_id)
         
     # 5. Listeleme islemi
     elif func == "list_appointments":
-        date = params.get("date","")
+        date = get_safe_param("date")
         return api_list_appointments(date, session_id)
         
-    # Bilinmeyen bir fonksiyon gelirse
     else:
         return "Sistemde bir hata oluştu, lütfen işleminizi tekrar belirtin."
-
 
 # --- API ENDPOINT'LERI ---
 
@@ -255,24 +259,34 @@ def konus(istek: Mesaj):
     gecmis.append({"role": "assistant", "content": yanit})
     konusma_gecmisleri[session_id] = gecmis
 
-    return {"yanit": yanit}
+    # TTS: yaniti sese cevir
+    from tts import metni_sese_cevir
+    tts_dosyasi = metni_sese_cevir(yanit)
+
+    return {
+        "yanit": yanit,
+        "ses_url": f"/tts-ses/{tts_dosyasi}"
+    }
 
 @app.post("/ses-konus")
 async def ses_konus(dosya: UploadFile = File(...), session_id: str = Form(...)):
-
-    return;
 
     gecici_ad = f"gecici_{uuid.uuid4().hex}.wav"
     with open(gecici_ad, "wb") as f:
         shutil.copyfileobj(dosya.file, f)
 
     try:
+        # STT: sesi metne cevir
         from stt import sesi_metne_cevir
         algilanan_metin = sesi_metne_cevir(gecici_ad)
 
         if not algilanan_metin:
-            return {"algilanan_metin": "(ses algilanamadi)", "yanit": "Sesinizi anlayamadim, tekrar dener misiniz?"}
-
+            return {
+                "algilanan_metin": "(ses algilanamadi)",
+                "yanit": "Sesinizi anlayamadim, tekrar dener misiniz?",
+                "ses_url": None
+            }
+        
         if session_id not in konusma_gecmisleri:
             konusma_gecmisleri[session_id] = [
                 {"role": "system", "content": "Sen otonom bir MHRS asistanısın. Kullanıcının randevu taleplerini, tıbbi şikayetlerini, iptal işlemlerini veya konu dışı sohbetlerini analiz et. Çıktılarını her zaman fonksiyon çağrısı içeren JSON formatında üret.\n\nGörevin kullanıcı taleplerini analiz edip SADECE aşağıdaki fonksiyonlardan birini içeren JSON üretmektir:\n1. ask_user\n2. check_availability\n3. book_appointment\n4. cancel_appointment\n5. list_appointments\n\nKESİNLİKLE bu listede olmayan bir fonksiyon adı (örneğin create_appointment vb.) kullanma.\n\nKritik Kural (Departman Kısıtlaması):\nEğer üreteceğin JSON'un içinde bir \"department\" parametresi varsa, bu parametrenin değeri SADECE aşağıdaki listede yer alan standart isimlerden biri olmak ZORUNDADIR. Başka hiçbir kelime veya ek kullanma:\n- \"Dahiliye\"\n- \"Kardiyoloji\"\n- \"Cildiye\"\n- \"Göz Hastalıkları\"\n- \"Gastroenteroloji\"\n- \"Kulak Burun Boğaz\"\n- \"Ortopedi ve Travmatoloji\"\n- \"Nöroloji\"\n- \"Genel Cerrahi\"\n- \"Psikiyatri\"\n- \"Üroloji\"\n- \"Kadın Hastalıkları ve Doğum\"\n\nKullanıcı eşanlamlı veya kısaltma kullansa bile (Örneğin; \"İç hastalıkları\", \"KBB\", \"Cildiye doktoru\", \"Göz\"), sen bunu yukarıdaki listedeki karşılığına çevirmelisin. Eğer kullanıcının şikayetinden hangi polikliniğe gitmesi gerektiğini kesin olarak anlayamıyorsan, \"ask_user\" fonksiyonunu kullanarak hastadan poliklinik adını netleştirmesini iste.\n\nKRİTİK BİLGİ (Zaman Farkındalığı):\nBugünün tarihi: {bugun_tarih}\nBugün günlerden: {bugun_gun}\nEğer kullanıcı \"yarın\", \"haftaya\", \"salı günü\" gibi göreceli zaman dilimleri kullanırsa, yukarıdaki bugünün tarihini baz alarak hesaplama yap. Üreteceğin JSON içindeki \"date\" parametresini KESİNLİKLE \"YYYY-MM-DD\" formatında mutlak bir tarihe çevirerek ver.\nEğer kullanıcı \"sabah\", \"öğlen\", \"öğleden sonra\", \"akşam\" gibi bir zaman dilimi veya \"saat 14:00\" gibi net bir saat belirtirse, bunu JSON içinde \"time_preference\" adında yeni bir parametre olarak ekle. Model olarak saat uydurma, sadece kullanıcının niyetini (sabah, 14:00 vb.) bu alana yaz."}
@@ -288,19 +302,54 @@ async def ses_konus(dosya: UploadFile = File(...), session_id: str = Form(...)):
         gecmis.append({"role": "assistant", "content": yanit})
         konusma_gecmisleri[session_id] = gecmis
 
+        # TTS: yaniti sese cevir
+        from tts import metni_sese_cevir
+        tts_dosyasi = metni_sese_cevir(yanit)
+
         return {
             "algilanan_metin": algilanan_metin,
-            "yanit": yanit
+            "yanit": yanit,
+            "ses_url": f"/tts-ses/{tts_dosyasi}"
         }
 
     finally:
         from stt import gecici_dosyayi_sil
         gecici_dosyayi_sil(gecici_ad)
 
-        import uvicorn
+
+
+@app.get("/tts-ses/{dosya_adi}")
+async def tts_ses_getir(dosya_adi: str):
+    """Olusturulan TTS ses dosyasini tarayiciya gonderir ve siler."""
+    # Guvenlik: sadece tts_ ile baslayan mp3 dosyalarina izin ver
+    if not dosya_adi.startswith("tts_") or not dosya_adi.endswith(".mp3"):
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400, detail="Gecersiz dosya adi")
+
+    if not os.path.exists(dosya_adi):
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Ses dosyasi bulunamadi")
+
+    return FileResponse(
+        path=dosya_adi,
+        media_type="audio/mpeg",
+        filename=dosya_adi,
+        background=None
+    )
+
+@app.delete("/tts-ses/{dosya_adi}")
+async def tts_ses_sil(dosya_adi: str):
+    """Tarayici sesi oynadiktan sonra dosyayi siler."""
+    from tts import tts_dosyasini_sil
+    tts_dosyasini_sil(dosya_adi)
+    return {"ok": True}
+
+
+import uvicorn
 
 # ... (Senin yazdığın tüm o route ve fonksiyon kodları yukarıda kalacak) ...
 
 # Eger bu dosya dogrudan calistiriliyorsa (VSCode F5 ile yaptigimiz gibi), Uvicorn motorunu calistir:
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="127.0.0.1", port=8001)
+

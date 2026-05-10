@@ -15,6 +15,7 @@
         .vad-indicator.kaydediyor { background: red; animation: blink 0.6s infinite; }
         .vad-indicator.bekliyor   { background: orange; animation: blink 0.6s infinite; }
         .vad-indicator.isleniyor  { background: white; animation: blink 0.8s infinite; }
+        .vad-indicator.okuyor     { background: #a78bfa; animation: blink 0.8s infinite; }
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
         .ses-seviyesi { height: 3px; background: #e0e0e0; margin: 0 16px 8px; border-radius: 2px; overflow: hidden; }
         .ses-seviyesi-bar { height: 100%; background: #1a73e8; width: 0%; transition: width 0.1s; border-radius: 2px; }
@@ -43,7 +44,7 @@
         </div>
         <div class="ses-seviyesi"><div class="ses-seviyesi-bar" id="ses-bar"></div></div>
         <div class="chat-messages" id="messages">
-            <div class="message assistant">Merhaba! Dinlemeyi baslatmak icin asagidaki butona basin, konusun, durakladiginizda otomatik gonderilecektir.</div>
+            <div class="message assistant">Merhaba! MHRS randevu asistaniyim. Konusun veya yazin, size yardimci olayim.</div>
         </div>
         <div class="chat-input-area">
             <button id="vad-toggle">&#127908; Dinlemeyi Baslat</button>
@@ -53,7 +54,7 @@
     </div>
 
     <script>
-        const sessionId = crypto.randomUUID();
+        const sessionId   = crypto.randomUUID();
         const messagesDiv = document.getElementById('messages');
         const input       = document.getElementById('message-input');
         const sendBtn     = document.getElementById('send-btn');
@@ -65,17 +66,13 @@
         const SES_ESIGI        = 80;
         const SESSIZLIK_SURESI = 2000;
 
-        let stream         = null;
-        let audioContext   = null;
-        let analyser       = null;
-        let mediaRecorder  = null;
-        let audioChunks    = [];
-        let animFrame      = null;
-        let vadAktif       = false;
-        let kayitYapiliyor = false;
-        let isleniyor      = false;
+        let stream = null, audioContext = null, analyser = null;
+        let mediaRecorder = null, audioChunks = [], animFrame = null;
+        let vadAktif = false, kayitYapiliyor = false, isleniyor = false;
         let sessizlikTimer = null;
+        let mevcutAudio = null; // Oynatilan ses nesnesi
 
+        // --- UI ---
         function addMessage(text, cssClass) {
             const div = document.createElement('div');
             div.className = 'message ' + cssClass;
@@ -87,8 +84,7 @@
         function addTyping(metin) {
             removeTyping();
             const div = document.createElement('div');
-            div.className = 'typing';
-            div.id = 'typing';
+            div.className = 'typing'; div.id = 'typing';
             div.textContent = metin || 'Asistan yaziyor...';
             messagesDiv.appendChild(div);
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
@@ -104,9 +100,38 @@
             durumYazi.textContent = yazi;
         }
 
+        // --- TTS: yaniti sesli oku ---
+        function sesliOku(sesUrl, callback) {
+            // Onceki sesi durdur
+            if (mevcutAudio) {
+                mevcutAudio.pause();
+                mevcutAudio = null;
+            }
+
+            durumGuncelle('okuyor', 'Asistan konusuyor...');
+
+            mevcutAudio = new Audio(sesUrl);
+
+            mevcutAudio.onended = async () => {
+                // Sunucudaki gecici dosyayi sil
+                const dosyaAdi = sesUrl.split('/').pop();
+                await fetch(`/tts-ses/${dosyaAdi}`, { method: 'DELETE' }).catch(() => {});
+                mevcutAudio = null;
+                if (callback) callback();
+            };
+
+            mevcutAudio.onerror = () => {
+                mevcutAudio = null;
+                if (callback) callback();
+            };
+
+            mevcutAudio.play();
+        }
+
+        // --- Ses gonderme (STT yolu) ---
         async function sesGonder() {
             isleniyor = true;
-            cancelAnimationFrame(animFrame);  // Dinleme dongusunu durdur
+            cancelAnimationFrame(animFrame);
             durumGuncelle('isleniyor', 'Ses isleniyor...');
             addTyping('Sesiniz isleniyor...');
 
@@ -119,9 +144,24 @@
                 const res  = await fetch('/ses-konus', { method: 'POST', body: form });
                 const data = await res.json();
                 removeTyping();
+
                 if (data.algilanan_metin && data.algilanan_metin !== '(ses algilanamadi)') {
                     addMessage(data.algilanan_metin, 'user');
                     addMessage(data.yanit, 'assistant');
+
+                    // Yaniti sesli oku, bittikten sonra dinlemeye don
+                    if (data.ses_url) {
+                        sesliOku(data.ses_url, () => {
+                            isleniyor      = false;
+                            kayitYapiliyor = false;
+                            audioChunks    = [];
+                            if (vadAktif) {
+                                durumGuncelle('dinliyor', 'Dinliyor...');
+                                olcDongusu();
+                            }
+                        });
+                        return; // callback'te devam edecek
+                    }
                 }
             } catch (err) {
                 removeTyping();
@@ -131,56 +171,43 @@
             audioChunks    = [];
             isleniyor      = false;
             kayitYapiliyor = false;
-           
             if (vadAktif) {
                 durumGuncelle('dinliyor', 'Dinliyor...');
-                olcDongusu();  // Dinlemeyi tekrar baslat
+                olcDongusu();
             }
         }
 
+        // --- Kayit ---
         function kayitBaslat() {
             if (kayitYapiliyor || isleniyor) return;
-
             audioChunks   = [];
             mediaRecorder = new MediaRecorder(stream);
             mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunks.push(e.data); };
             mediaRecorder.onstop = () => { sesGonder(); };
             mediaRecorder.start(100);
-
             kayitYapiliyor = true;
             durumGuncelle('kaydediyor', 'Ses algilandi, kayit yapiliyor...');
         }
 
         function kayitBitir() {
             if (!kayitYapiliyor) return;
-            if (mediaRecorder && mediaRecorder.state === 'recording') {
-                mediaRecorder.stop();
-            }
+            if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
         }
 
+        // --- VAD dongusu ---
         function olcDongusu() {
             if (!vadAktif) return;
-
             const veri = new Uint8Array(analyser.frequencyBinCount);
             analyser.getByteFrequencyData(veri);
-            const ortalama = veri.reduce((a, b) => a + b, 0) / veri.length;
-            const yuzde    = Math.min(100, ortalama * 2.5);
+            const yuzde = Math.min(100, (veri.reduce((a,b)=>a+b,0)/veri.length) * 2.5);
             sesBar.style.width = yuzde + '%';
 
             if (!isleniyor) {
                 if (yuzde >= SES_ESIGI) {
-                    // Ses var — sessizlik sayacini iptal et
-                    if (sessizlikTimer) {
-                        clearTimeout(sessizlikTimer);
-                        sessizlikTimer = null;
-                    }
-                    if (!kayitYapiliyor) {
-                        kayitBaslat();
-                    } else {
-                        durumGuncelle('kaydediyor', 'Ses algilandi, kayit yapiliyor...');
-                    }
+                    if (sessizlikTimer) { clearTimeout(sessizlikTimer); sessizlikTimer = null; }
+                    if (!kayitYapiliyor) kayitBaslat();
+                    else durumGuncelle('kaydediyor', 'Ses algilandi, kayit yapiliyor...');
                 } else {
-                    // Sessizlik
                     if (kayitYapiliyor && sessizlikTimer === null) {
                         durumGuncelle('bekliyor', 'Duraksama algilandi, bekleniyor...');
                         sessizlikTimer = setTimeout(function() {
@@ -192,10 +219,10 @@
                     }
                 }
             }
-
             animFrame = requestAnimationFrame(olcDongusu);
         }
 
+        // --- VAD baslat / durdur ---
         async function vadBaslat() {
             try {
                 stream       = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -203,7 +230,6 @@
                 analyser     = audioContext.createAnalyser();
                 analyser.fftSize = 512;
                 audioContext.createMediaStreamSource(stream).connect(analyser);
-
                 vadAktif = true;
                 durumGuncelle('dinliyor', 'Dinliyor...');
                 vadToggle.textContent = 'Dinlemeyi Durdur';
@@ -221,6 +247,7 @@
             if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
             if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
             if (audioContext) { audioContext.close(); audioContext = null; }
+            if (mevcutAudio) { mevcutAudio.pause(); mevcutAudio = null; }
             kayitYapiliyor = false;
             sesBar.style.width = '0%';
             durumGuncelle('', 'Mikrofon kapali');
@@ -230,6 +257,7 @@
 
         vadToggle.addEventListener('click', () => { if (!vadAktif) vadBaslat(); else vadDurdur(); });
 
+        // --- Metin ile gonderme ---
         async function sendMessage(text) {
             if (!text.trim()) return;
             addMessage(text, 'user');
@@ -244,6 +272,11 @@
                 const data = await res.json();
                 removeTyping();
                 addMessage(data.yanit, 'assistant');
+
+                // Yaniti sesli oku
+                if (data.ses_url) {
+                    sesliOku(data.ses_url, () => {});
+                }
             } catch (err) {
                 removeTyping();
                 addMessage('Baglanti hatasi: ' + err.message, 'assistant');
