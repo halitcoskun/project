@@ -65,10 +65,10 @@ IP Address: All Unassigned veya 127.0.0.1.
 Asistanın kullandığı temel API rotaları şunlardır:
 
 Metot,Endpoint,İşlev
-GET,/api/Appointment/availability,Uygun poliklinik ve saatleri listeler.
-POST,/api/Appointment/book,Yeni bir randevu kaydı oluşturur.
-DELETE,/api/Appointment/cancel/{id},Mevcut bir randevuyu iptal eder.
-GET,/api/Appointment/list,Kayıtlı randevuları listeler.
+POST,/api/Mhrs/CheckAvailability,Uygun poliklinik ve saatleri listeler.
+POST,/api/Mhrs/BookAppointment,Yeni bir randevu kaydı oluşturur.
+POST,/api/Mhrs/CancelAppointment,Mevcut bir randevuyu iptal eder.
+POST,/api/Mhrs/ListAppointment,Kayıtlı randevuları listeler.
 
 Örnek JSON Yanıtı (Success Response):
 
